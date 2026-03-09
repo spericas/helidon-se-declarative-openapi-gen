@@ -163,6 +163,22 @@ class PetstoreGenerationIT {
     }
 
     @Test
+    void endpoint_computedHeader_hasHeaderFunctionStub() throws IOException {
+        // A @Service.Named Http.HeaderFunction stub must be emitted for each computed header
+        String content = read(apiFile("PetsEndpoint.java"));
+        assertThat(content).contains("@Service.Named(\"xNextHeaderFn\")");
+        assertThat(content).contains("class XNextHeaderFn implements Http.HeaderFunction");
+        assertThat(content).contains("Optional<Header> apply(HeaderName headerName)");
+    }
+
+    @Test
+    void endpoint_computedHeader_importsHeaderTypes() throws IOException {
+        String content = read(apiFile("PetsEndpoint.java"));
+        assertThat(content).contains("import io.helidon.http.Header;");
+        assertThat(content).contains("import io.helidon.http.HeaderName;");
+    }
+
+    @Test
     void endpoint_showPetById_hasPathParam() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("@Http.PathParam(\"petId\")");

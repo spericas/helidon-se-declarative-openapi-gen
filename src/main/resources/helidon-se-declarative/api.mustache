@@ -20,9 +20,11 @@ import {{import}};
 {{/imports}}
 {{#operations}}
 import java.util.List;
-{{#hasOptionalQueryParams}}
 import java.util.Optional;
-{{/hasOptionalQueryParams}}
+{{#hasComputedHeaders}}
+import io.helidon.http.Header;
+import io.helidon.http.HeaderName;
+{{/hasComputedHeaders}}
 {{#hasParamValidation}}
 import io.helidon.validation.Validation;
 {{/hasParamValidation}}
@@ -80,4 +82,26 @@ import io.helidon.security.abac.role.RoleValidator;
 
 {{/operation}}
 }
+{{#allComputedHeaders}}
+
+/**
+ * Computes the {@code {{name}}} response header.
+ *
+ * <p>Registered as a named {@link io.helidon.http.Http.HeaderFunction} so that
+ * {@code @RestServer.ComputedHeader(name = "{{name}}", function = "{{functionName}}")}
+ * can resolve it from the DI registry at startup.</p>
+ *
+ * <p>Replace the body of {@link #apply} with real header computation logic.</p>
+ */
+@Service.Singleton
+@Service.Named("{{functionName}}")
+class {{className}} implements Http.HeaderFunction {
+
+    @Override
+    public Optional<Header> apply(HeaderName headerName) {
+        // TODO: compute the {{name}} response header value, or return Optional.empty() to omit it
+        return Optional.empty();
+    }
+}
+{{/allComputedHeaders}}
 {{/operations}}

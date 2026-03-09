@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -389,9 +390,11 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
                                 h.put("value", defaultVal.toString());
                                 staticHeaders.add(h);
                             } else {
+                                String fnName = headerNameToFunctionName(headerName);
                                 Map<String, String> h = new HashMap<>();
                                 h.put("name", headerName);
-                                h.put("functionName", headerNameToFunctionName(headerName));
+                                h.put("functionName", fnName);
+                                h.put("className", Character.toUpperCase(fnName.charAt(0)) + fnName.substring(1));
                                 computedHeaders.add(h);
                             }
                         });
@@ -524,6 +527,22 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         result.put("hasParamValidation", anyParamValidation);
         result.put("hasFormOperations", anyFormOperations);
         result.put("hasMultipartOperations", anyMultipartOperations);
+
+        // Collect unique computed header function stubs (deduped by functionName)
+        if (anyComputedHeaders) {
+            Map<String, Map<String, String>> byFnName = new LinkedHashMap<>();
+            for (CodegenOperation op : opList) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, String>> hdrs =
+                        (List<Map<String, String>>) op.vendorExtensions.get("x-computed-headers");
+                if (hdrs != null) {
+                    for (Map<String, String> h : hdrs) {
+                        byFnName.putIfAbsent(h.get("functionName"), h);
+                    }
+                }
+            }
+            result.put("allComputedHeaders", new ArrayList<>(byFnName.values()));
+        }
         result.put("errorModel", errorModel != null ? errorModel : "Object");
         if (anySecurityRoles) {
             // Visible to supporting-file templates (pom.xml, application.yaml) which only
