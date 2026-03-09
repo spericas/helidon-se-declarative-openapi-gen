@@ -167,7 +167,7 @@ class PetstoreGenerationIT {
         // A @Service.Named Http.HeaderFunction stub must be emitted for each computed header
         String content = read(apiFile("PetsEndpoint.java"));
         assertThat(content).contains("@Service.Named(\"xNextHeaderFn\")");
-        assertThat(content).contains("class XNextHeaderFn implements Http.HeaderFunction");
+        assertThat(content).contains("class PetsXNextHeaderFn implements Http.HeaderFunction");
         assertThat(content).contains("Optional<Header> apply(HeaderName headerName)");
     }
 
