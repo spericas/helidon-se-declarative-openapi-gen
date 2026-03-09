@@ -218,6 +218,11 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
             apiTemplateFiles.put("errorHandler.mustache", "ErrorHandler.java");
         }
 
+        if (serveOpenApi) {
+            supportingFiles.add(new SupportingFile(
+                    "openapi.yaml.mustache", "src/main/resources/META-INF", "openapi.yaml"));
+        }
+
         // Main.java location depends on the (possibly user-supplied) invokerPackage
         String mainFolder = "src/main/java/" + invokerPackage.replace('.', '/');
         supportingFiles.add(new SupportingFile("Main.java.mustache", mainFolder, "Main.java"));
@@ -281,6 +286,18 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
                 }
             } catch (Exception ignored) {
                 // Malformed URL — skip
+            }
+        }
+
+        // Serialize the spec so the openapi.yaml.mustache template can write it to
+        // src/main/resources/META-INF/openapi.yaml (picked up by helidon-openapi at runtime)
+        if (serveOpenApi) {
+            try {
+                String yamlContent = io.swagger.v3.core.util.Yaml.pretty()
+                        .writeValueAsString(openAPI);
+                additionalProperties.put("x-openapi-spec-yaml", yamlContent);
+            } catch (Exception ignored) {
+                // Serialization failed — spec file will be skipped
             }
         }
     }

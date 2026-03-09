@@ -319,6 +319,22 @@ class PetstoreGenerationIT {
         return outputDir.resolve("src/main/java/io/helidon/example/model/" + name).toFile();
     }
 
+    @Test
+    void openapiYaml_isGenerated() {
+        assertThat(outputDir.resolve("src/main/resources/META-INF/openapi.yaml")).exists();
+    }
+
+    @Test
+    void openapiYaml_containsSpecContent() throws IOException {
+        String content = Files.readString(
+                outputDir.resolve("src/main/resources/META-INF/openapi.yaml"));
+        assertThat(content)
+                .contains("openapi:")
+                .contains("paths:")
+                .contains("/pets")
+                .doesNotContain("null");
+    }
+
     private File javaFile(String relativePath) {
         return outputDir.resolve("src/main/java/" + relativePath).toFile();
     }
