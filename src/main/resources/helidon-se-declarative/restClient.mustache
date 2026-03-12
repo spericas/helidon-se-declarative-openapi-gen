@@ -1,8 +1,6 @@
 package {{package}};
 
-// TODO: verify the exact import for @RestClient.Endpoint in your Helidon version.
-// In Helidon 4.4.x the annotation lives in io.helidon.webclient.api or a sub-package.
-// import io.helidon.webclient.api.RestClient;
+import io.helidon.webclient.api.RestClient;
 {{#ftEnabled}}
 import io.helidon.faulttolerance.Ft;
 {{/ftEnabled}}
@@ -12,26 +10,12 @@ import io.helidon.faulttolerance.Ft;
  * Declarative REST client for the {{classname}} API.
  *
  * <p>Extends {@link {{classname}}Api} to inherit all HTTP binding annotations.
- * The Helidon annotation processor generates a proxy implementation at build time.</p>
+ * The Helidon annotation processor generates a typed proxy implementation at build time.</p>
  *
- * <p>Configure the target URI via application.yaml:
- * <pre>
- *   {{classnameLowercase}}-service:
- *     uri: http://localhost:8080
- * </pre>
- * </p>
- *
- * <p>Add to pom.xml:
- * <pre>{@code
- *   <dependency>
- *     <groupId>io.helidon.webclient</groupId>
- *     <artifactId>helidon-webclient-http1</artifactId>
- *   </dependency>
- * }</pre>
- * </p>
+ * <p>Configure the target URI via {@code app.client.endpoint} in application configuration.</p>
  */
-// Uncomment after adding helidon-webclient-http1 dependency and verifying import path:
-// @RestClient.Endpoint("${" + "{{classnameLowercase}}-service.uri:http://localhost:8080}")
+@SuppressWarnings("deprecation")
+@RestClient.Endpoint("${app.client.endpoint:http://localhost:8080}")
 {{#ftEnabled}}@Ft.Retry
 {{/ftEnabled}}public interface {{classname}}Client extends {{classname}}Api {
     // No additional methods — inherits the full API contract from {{classname}}Api

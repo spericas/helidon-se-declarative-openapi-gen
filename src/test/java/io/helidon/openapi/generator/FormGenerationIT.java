@@ -35,7 +35,7 @@ class FormGenerationIT {
                 .setGeneratorName("helidon-se-declarative")
                 .setInputSpec(specPath)
                 .setOutputDir(outputDir.toString())
-                .addAdditionalProperty("helidonVersion", "4.4.0-M2")
+                .addAdditionalProperty("helidonVersion", "4.4.0")
                 .addAdditionalProperty("apiPackage", "io.helidon.example.api")
                 .addAdditionalProperty("modelPackage", "io.helidon.example.model")
                 .addAdditionalProperty("invokerPackage", "io.helidon.example");
@@ -48,8 +48,8 @@ class FormGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_formUrlEncoded_hasCorrectConsumes() throws IOException {
-        assertThat(read(apiFile("FormsEndpoint.java")))
+    void apiInterface_formUrlEncoded_hasCorrectConsumes() throws IOException {
+        assertThat(read(apiFile("FormsApi.java")))
                 .contains("@Http.Consumes(MediaTypes.APPLICATION_FORM_URLENCODED_VALUE)");
     }
 
@@ -65,19 +65,13 @@ class FormGenerationIT {
                 .contains("import io.helidon.http.Parameters;");
     }
 
-    @Test
-    void apiInterface_formUrlEncoded_hasCorrectConsumes() throws IOException {
-        assertThat(read(apiFile("FormsApi.java")))
-                .contains("@Http.Consumes(MediaTypes.APPLICATION_FORM_URLENCODED_VALUE)");
-    }
-
     // -------------------------------------------------------------------------
     // multipart/form-data
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_multipart_hasCorrectConsumes() throws IOException {
-        assertThat(read(apiFile("FormsEndpoint.java")))
+    void apiInterface_multipart_hasCorrectConsumes() throws IOException {
+        assertThat(read(apiFile("FormsApi.java")))
                 .contains("@Http.Consumes(MediaTypes.MULTIPART_FORM_DATA_VALUE)");
     }
 

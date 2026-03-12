@@ -35,7 +35,7 @@ class FeaturesGenerationIT {
                 .setGeneratorName("helidon-se-declarative")
                 .setInputSpec(specPath)
                 .setOutputDir(outputDir.toString())
-                .addAdditionalProperty("helidonVersion", "4.4.0-M2")
+                .addAdditionalProperty("helidonVersion", "4.4.0")
                 .addAdditionalProperty("apiPackage", "io.helidon.example.api")
                 .addAdditionalProperty("modelPackage", "io.helidon.example.model")
                 .addAdditionalProperty("invokerPackage", "io.helidon.example");
@@ -48,15 +48,15 @@ class FeaturesGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_deprecatedOperation_hasDeprecatedAnnotation() throws IOException {
-        assertThat(read(apiFile("ThingsEndpoint.java")))
+    void apiInterface_deprecatedOperation_hasDeprecatedAnnotation() throws IOException {
+        assertThat(read(apiFile("ThingsApi.java")))
                 .contains("@Deprecated");
     }
 
     @Test
-    void apiInterface_deprecatedOperation_hasDeprecatedAnnotation() throws IOException {
-        assertThat(read(apiFile("ThingsApi.java")))
-                .contains("@Deprecated");
+    void endpoint_implementsApi_contract() throws IOException {
+        assertThat(read(apiFile("ThingsEndpoint.java")))
+                .contains("implements ThingsApi");
     }
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,38 @@
+package {{package}};
+
+{{#generateClient}}
+import io.helidon.webclient.api.RestClient;
+import io.helidon.webserver.testing.junit5.ServerTest;
+{{/generateClient}}
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+
+{{#operations}}
+{{#generateClient}}
+@SuppressWarnings("deprecation")
+@ServerTest
+class {{classname}}EndpointTest {
+    private final {{classname}}Client client;
+
+    {{classname}}EndpointTest(@RestClient.Client {{classname}}Client client) {
+        this.client = client;
+    }
+
+    @Test
+    void client_isInjected() {
+        assertThat(client, notNullValue());
+    }
+}
+{{/generateClient}}
+{{^generateClient}}
+class {{classname}}EndpointTest {
+
+    @Test
+    void endpoint_isInstantiable() {
+        assertThat(new {{classname}}Endpoint(), notNullValue());
+    }
+}
+{{/generateClient}}
+{{/operations}}

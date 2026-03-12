@@ -40,14 +40,13 @@ class SecurityGenerationIT {
     }
 
     // -------------------------------------------------------------------------
-    // Endpoint: @RoleValidator.Roles and SecurityContext
+    // Endpoint: SecurityContext and API contract implementation
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_securedMethod_hasRoleValidatorAnnotation() throws IOException {
-        // createItem has security: [{basicAuth: [admin]}]
+    void endpoint_implementsApi_contract() throws IOException {
         assertThat(read(apiFile("ItemsEndpoint.java")))
-                .contains("@RoleValidator.Roles(\"admin\")");
+                .contains("implements ItemsApi");
     }
 
     @Test
@@ -59,28 +58,22 @@ class SecurityGenerationIT {
 
     @Test
     void endpoint_multiRoleMethod_hasArrayAnnotation() throws IOException {
-        // deleteItem has security: [{basicAuth: [admin, moderator]}]
-        assertThat(read(apiFile("ItemsEndpoint.java")))
+        // deleteItem has security: [{basicAuth: [admin, moderator]}] on the API interface
+        assertThat(read(apiFile("ItemsApi.java")))
                 .contains("@RoleValidator.Roles({\"admin\", \"moderator\"})");
     }
 
     @Test
-    void endpoint_publicMethod_hasNoRoleAnnotation() throws IOException {
-        // listItems has no security
-        String content = read(apiFile("ItemsEndpoint.java"));
-        // The listItems method block should not contain @RoleValidator.Roles
-        // (other methods may, so we check the method doesn't have it right before it)
-        assertThat(content).contains("listItems(");
-        // Verify the annotation is present (for other methods) but not on all methods
-        assertThat(content).contains("@RoleValidator.Roles");
+    void apiInterface_securedMethod_hasRoleValidatorAnnotation() throws IOException {
+        // createItem has security: [{basicAuth: [admin]}]
+        assertThat(read(apiFile("ItemsApi.java")))
+                .contains("@RoleValidator.Roles(\"admin\")");
     }
 
     @Test
     void endpoint_hasSecurityImports() throws IOException {
         String content = read(apiFile("ItemsEndpoint.java"));
-        assertThat(content)
-                .contains("import io.helidon.security.SecurityContext;")
-                .contains("import io.helidon.security.abac.role.RoleValidator;");
+        assertThat(content).contains("import io.helidon.security.SecurityContext;");
     }
 
     // -------------------------------------------------------------------------

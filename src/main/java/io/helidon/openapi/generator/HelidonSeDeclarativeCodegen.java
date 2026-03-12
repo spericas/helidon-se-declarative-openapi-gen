@@ -2,6 +2,9 @@ package io.helidon.openapi.generator;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,7 +62,7 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
     static final String OPT_TRACING_ENABLED = "tracingEnabled";
     static final String OPT_METRICS_ENABLED = "metricsEnabled";
 
-    private String helidonVersion = "4.4.0-M2";
+    private String helidonVersion = "4.4.0";
     private boolean generateClient = true;
     private boolean generateErrorHandler = true;
     private boolean serveOpenApi = true;
@@ -98,11 +101,16 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // Template for per-model files
         modelTemplateFiles.put("model.mustache", ".java");
+        // Unit test templates for generated API and model classes
+        apiTestTemplateFiles.put("api-test.mustache", ".java");
+        modelTestTemplateFiles.put("model-test.mustache", ".java");
 
         // Supporting files (processed as Mustache templates)
         supportingFiles.add(new SupportingFile("pom.xml.mustache", "", "pom.xml"));
         supportingFiles.add(new SupportingFile("application.yaml.mustache",
                 "src/main/resources", "application.yaml"));
+        supportingFiles.add(new SupportingFile("application-test.yaml.mustache",
+                "src/test/resources", "application-test.yaml"));
         supportingFiles.add(new SupportingFile("logging.properties.mustache",
                 "src/main/resources", "logging.properties"));
 
@@ -545,20 +553,35 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         result.put("hasFormOperations", anyFormOperations);
         result.put("hasMultipartOperations", anyMultipartOperations);
 
-        // Collect unique computed header function stubs (deduped by functionName)
-        if (anyComputedHeaders) {
-            Map<String, Map<String, String>> byFnName = new LinkedHashMap<>();
-            for (CodegenOperation op : opList) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, String>> hdrs =
-                        (List<Map<String, String>>) op.vendorExtensions.get("x-computed-headers");
-                if (hdrs != null) {
-                    for (Map<String, String> h : hdrs) {
-                        byFnName.putIfAbsent(h.get("functionName"), h);
-                    }
+        // Also expose classname in operations context for templates that need it
+        String tagBaseName = opList.get(0).baseName != null && !opList.get(0).baseName.isBlank()
+                ? opList.get(0).baseName
+                : (result.getOperations().get("baseName") != null
+                        ? result.getOperations().get("baseName").toString()
+                        : "Default");
+        String classname = toApiName(tagBaseName);
+        result.put("classname", classname);
+        result.put("classnameLowercase", classname.toLowerCase());
+
+        // Collect unique computed header function stubs (deduped by functionName).
+        // We derive this from x-computed-headers directly to avoid relying on boolean flags.
+        Map<String, Map<String, String>> byFnName = new LinkedHashMap<>();
+        for (CodegenOperation op : opList) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> hdrs =
+                    (List<Map<String, String>>) op.vendorExtensions.get("x-computed-headers");
+            if (hdrs != null) {
+                for (Map<String, String> h : hdrs) {
+                    byFnName.putIfAbsent(h.get("functionName"), h);
                 }
             }
-            result.put("allComputedHeaders", new ArrayList<>(byFnName.values()));
+        }
+        if (!byFnName.isEmpty()) {
+            anyComputedHeaders = true;
+            List<Map<String, String>> headerFunctions = new ArrayList<>(byFnName.values());
+            result.put("allComputedHeaders", headerFunctions);
+            // Generate one file per computed header function implementation.
+            generateComputedHeaderFunctionFiles(classname, headerFunctions);
         }
         result.put("errorModel", errorModel != null ? errorModel : "Object");
         if (anySecurityRoles) {
@@ -567,14 +590,53 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
             additionalProperties.put("hasSecurity", Boolean.TRUE);
         }
 
-        // Also expose classname in operations context for templates that need it
-        String classname = toApiName(result.getOperations().get("baseName") != null
-                ? result.getOperations().get("baseName").toString()
-                : "Default");
-        result.put("classname", classname);
-        result.put("classnameLowercase", classname.toLowerCase());
-
         return result;
+    }
+
+    private void generateComputedHeaderFunctionFiles(String apiClassName, List<Map<String, String>> headerFunctions) {
+        String apiFolder = outputFolder + File.separator + sourceFolder + File.separator + apiPackage.replace('.', '/');
+        for (Map<String, String> header : headerFunctions) {
+            String classSuffix = header.get("className");
+            String functionName = header.get("functionName");
+            String headerName = header.get("name");
+            if (classSuffix == null || functionName == null || headerName == null) {
+                continue;
+            }
+
+            String className = apiClassName + classSuffix;
+            Path file = Path.of(apiFolder, className + ".java");
+            String content = """
+                    package %s;
+
+                    import java.util.Optional;
+
+                    import io.helidon.http.Header;
+                    import io.helidon.http.HeaderName;
+                    import io.helidon.http.Http;
+                    import io.helidon.service.registry.Service;
+
+                    /**
+                     * Computes the {@code %s} response header.
+                     */
+                    @Service.Singleton
+                    @Service.Named("%s")
+                    public class %s implements Http.HeaderFunction {
+
+                        @Override
+                        public Optional<Header> apply(HeaderName headerName) {
+                            // TODO: compute the %s response header value, or return Optional.empty() to omit it
+                            return Optional.empty();
+                        }
+                    }
+                    """.formatted(apiPackage, headerName, functionName, className, headerName);
+
+            try {
+                Files.createDirectories(file.getParent());
+                Files.writeString(file, content, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to generate computed header function class: " + file, e);
+            }
+        }
     }
 
     /**

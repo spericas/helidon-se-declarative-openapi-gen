@@ -5,6 +5,12 @@ server:
   # error-handling:
   #   include-entity: true
 
+{{#generateClient}}
+app:
+  client:
+    endpoint: "http://localhost:8080"
+{{/generateClient}}
+
 {{#serveOpenApi}}
 # OpenAPI endpoint is auto-discovered from META-INF/openapi.yaml on the classpath.
 # Access at: GET /openapi
