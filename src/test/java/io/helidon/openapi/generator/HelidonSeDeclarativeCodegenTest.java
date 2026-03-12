@@ -137,7 +137,7 @@ class HelidonSeDeclarativeCodegenTest {
         assertThat(codegen.modelDocTemplateFiles()).isEmpty();
         assertThat(codegen.apiDocTemplateFiles()).isEmpty();
         assertThat(codegen.apiTestTemplateFiles()).containsEntry("api-test.mustache", ".java");
-        assertThat(codegen.modelTestTemplateFiles()).containsEntry("model-test.mustache", ".java");
+        assertThat(codegen.modelTestTemplateFiles()).isEmpty();
     }
 
     // -------------------------------------------------------------------------

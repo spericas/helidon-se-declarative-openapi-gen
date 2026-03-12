@@ -44,7 +44,7 @@ import static org.openapitools.codegen.utils.StringUtils.camelize;
  *   <li>{Tag}Endpoint.java — {@code @RestServer.Endpoint @Service.Singleton} implementation</li>
  *   <li>{Tag}Client.java — {@code @RestClient.Endpoint} interface (if generateClient=true)</li>
  *   <li>{Tag}Exception.java — RuntimeException subclass (if generateErrorHandler=true)</li>
- *   <li>{Tag}ErrorHandler.java — ErrorHandlerProvider (if generateErrorHandler=true)</li>
+ *   <li>{Tag}ErrorHandler.java — ErrorHandler implementation (if generateErrorHandler=true)</li>
  * </ul>
  * Plus per model: {Model}.java (Helidon build-time JSON binding POJO)
  * Plus supporting files: pom.xml, Main.java, application.yaml, logging.properties
@@ -101,9 +101,8 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // Template for per-model files
         modelTemplateFiles.put("model.mustache", ".java");
-        // Unit test templates for generated API and model classes
+        // Unit test template for generated API classes
         apiTestTemplateFiles.put("api-test.mustache", ".java");
-        modelTestTemplateFiles.put("model-test.mustache", ".java");
 
         // Supporting files (processed as Mustache templates)
         supportingFiles.add(new SupportingFile("pom.xml.mustache", "", "pom.xml"));
@@ -122,7 +121,7 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
                 "Generate @RestClient.Endpoint interface per tag",
                 String.valueOf(generateClient));
         addOption(OPT_GENERATE_ERROR_HANDLER,
-                "Generate Exception + ErrorHandlerProvider classes per tag",
+                "Generate Exception + ErrorHandler classes per tag",
                 String.valueOf(generateErrorHandler));
         addOption(OPT_SERVE_OPENAPI,
                 "Copy spec to META-INF/openapi.yaml and add helidon-openapi dependency",
@@ -272,6 +271,16 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         };
     }
 
+    @Override
+    public String apiTestFilename(String templateName, String tag) {
+        String base = camelize(sanitizeName(tag));
+        String folder = apiTestFileFolder();
+        return switch (templateName) {
+            case "api-test.mustache" -> folder + File.separator + base + "EndpointTest.java";
+            default -> super.apiTestFilename(templateName, tag);
+        };
+    }
+
     // -------------------------------------------------------------------------
     // Spec pre-processing: extract server base path
     // -------------------------------------------------------------------------
@@ -343,6 +352,12 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // HTTP method annotation string (e.g. "@Http.GET")
         op.vendorExtensions.put("x-http-annotation", "@Http." + httpMethod.toUpperCase());
+        if (op.operationId != null && !op.operationId.isEmpty()) {
+            op.vendorExtensions.put("x-operation-id-capitalized",
+                    Character.toUpperCase(op.operationId.charAt(0)) + op.operationId.substring(1));
+        } else {
+            op.vendorExtensions.put("x-operation-id-capitalized", "Operation");
+        }
 
         // Determine the @Http.Consumes media type constant for this operation
         if (op.hasConsumes && op.consumes != null && !op.consumes.isEmpty()) {

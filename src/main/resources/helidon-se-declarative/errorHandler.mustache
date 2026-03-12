@@ -2,7 +2,6 @@ package {{package}};
 
 import io.helidon.service.registry.Service;
 import io.helidon.webserver.http.ErrorHandler;
-import io.helidon.webserver.http.spi.ErrorHandlerProvider;
 {{#operations}}
 import {{package}}.{{classname}}Exception;
 {{/operations}}
@@ -15,27 +14,22 @@ import {{package}}.{{classname}}Exception;
  */
 {{#operations}}
 @Service.Singleton
-public class {{classname}}ErrorHandler implements ErrorHandlerProvider<{{classname}}Exception> {
+public class {{classname}}ErrorHandler implements ErrorHandler<{{classname}}Exception> {
 
     @Override
-    public Class<{{classname}}Exception> errorType() {
-        return {{classname}}Exception.class;
-    }
-
-    @Override
-    public ErrorHandler<{{classname}}Exception> create() {
-        return (req, res, ex) -> {
-            // Build JSON manually — Helidon build-time binding only serialises @Json.Entity classes,
-            // not java.util.Map. Replace with res.send(new {{errorModel}}(...)) once the error
-            // model class has the right constructor.
-            String message = ex.getMessage() == null ? ""
-                    : ex.getMessage().replace("\\", "\\\\").replace("\"", "\\\"");
-            String json = "{\"code\":" + ex.status().code()
-                    + ",\"message\":\"" + message + "\"}";
-            res.status(ex.status());
-            res.headers().contentType(io.helidon.common.media.type.MediaTypes.APPLICATION_JSON);
-            res.send(json);
-        };
+    public void handle(io.helidon.webserver.http.ServerRequest req,
+                       io.helidon.webserver.http.ServerResponse res,
+                       {{classname}}Exception ex) {
+        // Build JSON manually — Helidon build-time binding only serialises @Json.Entity classes,
+        // not java.util.Map. Replace with res.send(new {{errorModel}}(...)) once the error
+        // model class has the right constructor.
+        String message = ex.getMessage() == null ? ""
+                : ex.getMessage().replace("\\", "\\\\").replace("\"", "\\\"");
+        String json = "{\"code\":" + ex.status().code()
+                + ",\"message\":\"" + message + "\"}";
+        res.status(ex.status());
+        res.headers().contentType(io.helidon.common.media.type.MediaTypes.APPLICATION_JSON);
+        res.send(json);
     }
 }
 {{/operations}}

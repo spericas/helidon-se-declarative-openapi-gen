@@ -109,12 +109,7 @@ class PetstoreGenerationIT {
 
     @Test
     void petsEndpointUnitTest_isGenerated() {
-        assertThat(apiTestFile("PetsTest.java")).exists();
-    }
-
-    @Test
-    void petModelUnitTest_isGenerated() {
-        assertThat(modelTestFile("PetTest.java")).exists();
+        assertThat(apiTestFile("PetsEndpointTest.java")).exists();
     }
 
     // -------------------------------------------------------------------------
@@ -134,9 +129,9 @@ class PetstoreGenerationIT {
     }
 
     @Test
-    void endpoint_hasHttpPathAnnotation() throws IOException {
+    void endpoint_doesNotDuplicateHttpPathAnnotation() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@Http.Path(\"/pets\")");
+                .doesNotContain("@Http.Path(\"/pets\")");
     }
 
     @Test
@@ -223,22 +218,15 @@ class PetstoreGenerationIT {
 
     @Test
     void endpointUnitTest_instantiatesEndpoint() throws IOException {
-        String content = read(apiTestFile("PetsTest.java"));
+        String content = read(apiTestFile("PetsEndpointTest.java"));
         assertThat(content).contains("class PetsEndpointTest");
+        assertThat(content).contains("void testListPets()");
+        assertThat(content).contains("void testCreatePets()");
+        assertThat(content).contains("void testShowPetById()");
         assertThat(content)
                 .satisfiesAnyOf(
                         c -> assertThat(c).contains("@ServerTest"),
-                        c -> assertThat(c).contains("endpoint_isInstantiable()"));
-    }
-
-    @Test
-    void modelUnitTest_instantiatesModel() throws IOException {
-        String content = read(modelTestFile("PetTest.java"));
-        assertThat(content).contains("class PetModelTest");
-        assertThat(content)
-                .satisfiesAnyOf(
-                        c -> assertThat(c).contains("assertThat(new Pet(), notNullValue())"),
-                        c -> assertThat(c).contains("assertNotNull(new Pet())"));
+                        c -> assertThat(c).contains("assertThat(new PetsEndpoint(), notNullValue())"));
     }
 
     // -------------------------------------------------------------------------
@@ -380,10 +368,6 @@ class PetstoreGenerationIT {
 
     private File apiTestFile(String name) {
         return outputDir.resolve("src/test/java/io/helidon/example/api/" + name).toFile();
-    }
-
-    private File modelTestFile(String name) {
-        return outputDir.resolve("src/test/java/io/helidon/example/model/" + name).toFile();
     }
 
     @Test

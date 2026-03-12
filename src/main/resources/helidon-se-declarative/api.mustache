@@ -44,7 +44,6 @@ import io.helidon.security.SecurityContext;
 @RestServer.Listener("@default")
 @RestServer.Endpoint
 @Service.Singleton
-@Http.Path("{{helidonBasePath}}")
 {{#corsEnabled}}@Cors.Defaults
 {{/corsEnabled}}{{#tracingEnabled}}@Tracing.Traced
 {{/tracingEnabled}}public class {{classname}}Endpoint implements {{classname}}Api {
