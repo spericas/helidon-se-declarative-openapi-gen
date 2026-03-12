@@ -627,7 +627,7 @@ openapi-generator as an addition or replacement for `JavaHelidonServerCodegen`'s
 declarative target. Target: after the Helidon SE declarative API reaches GA.
 
 **`@RestClient.Endpoint` import** — the exact import path for `@RestClient.Endpoint` was
-not confirmed stable in 4.4.0-M2. The generated `{Tag}Client.java` has the annotation
+not confirmed stable in 4.4.0. The generated `{Tag}Client.java` has the annotation
 commented out with instructions; once the import path is confirmed, uncomment it and
 remove the note.
 

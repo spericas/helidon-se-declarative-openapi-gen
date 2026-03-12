@@ -17,7 +17,7 @@ until the API stabilises.
 |------|---------|
 | Java | 21+ |
 | Maven | 3.9+ |
-| Helidon | 4.4.0-M2 (default; configurable) |
+| Helidon | 4.4.0 (default; configurable) |
 
 ---
 
@@ -50,7 +50,7 @@ repository, where the openapi-generator Maven plugin can find it as a plugin dep
                 <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
                 <output>${project.build.directory}/generated-sources/openapi</output>
                 <configOptions>
-                    <helidonVersion>4.4.0-M2</helidonVersion>
+                    <helidonVersion>4.4.0</helidonVersion>
                     <apiPackage>com.example.api</apiPackage>
                     <modelPackage>com.example.model</modelPackage>
                     <invokerPackage>com.example</invokerPackage>
@@ -91,7 +91,7 @@ Set options under `<configOptions>` in the plugin configuration.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `helidonVersion` | `4.4.0-M2` | Helidon version written into the generated `pom.xml` |
+| `helidonVersion` | `4.4.0` | Helidon version written into the generated `pom.xml` |
 | `apiPackage` | `io.helidon.example.api` | Package for endpoint, client, and exception classes |
 | `modelPackage` | `io.helidon.example.model` | Package for model POJO classes |
 | `invokerPackage` | `io.helidon.example` | Package for `Main.java` |
@@ -114,15 +114,17 @@ For each OpenAPI **tag group** (one endpoint class per tag):
 |------|-------------|
 | `{Tag}Api.java` | `@Http.Path` interface — shared HTTP contract |
 | `{Tag}Endpoint.java` | `@RestServer.Endpoint @Service.Singleton` — server implementation stub |
-| `{Tag}Client.java` | `@RestClient.Endpoint` stub — declarative REST client *(if `generateClient=true`)* |
+| `{Tag}Client.java` | `@RestClient.Endpoint("${app.client.endpoint:...}")` typed client — declarative REST client *(if `generateClient=true`)* |
 | `{Tag}Exception.java` | `RuntimeException` carrying an HTTP `Status` *(if `generateErrorHandler=true`)* |
 | `{Tag}ErrorHandler.java` | `ErrorHandler<{Tag}Exception>` — serialises errors as JSON *(if `generateErrorHandler=true`)* |
+| `{Tag}Test.java` | JUnit 5 `@ServerTest` smoke test that injects `{Tag}Client` *(or endpoint instantiation test if `generateClient=false`)* |
 
 For each OpenAPI **schema** (excluding array aliases):
 
 | File | Description |
 |------|-------------|
 | `{Model}.java` | Helidon build-time JSON binding POJO with `@Json.Entity`; `@Json.Required` on required fields; inner enum types; field initialisers for defaults |
+| `{Model}Test.java` | JUnit 5 unit test stub that instantiates the model class |
 
 Supporting files (one per project):
 
@@ -132,6 +134,8 @@ Supporting files (one per project):
 | `Main.java` | `@Service.GenerateBinding` entry point |
 | `src/main/resources/application.yaml` | Server port + security stub (commented out) |
 | `src/main/resources/logging.properties` | JUL logging configuration |
+| `src/test/java/**` | Generated JUnit 5 tests for API and model classes |
+| `src/test/resources/application-test.yaml` | Test client endpoint wiring (`http://localhost:${test.server.port}`) |
 
 ---
 

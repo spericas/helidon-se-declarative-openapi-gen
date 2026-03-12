@@ -12,11 +12,8 @@ import {{package}}.{{classname}}Exception;
  *
  * <p>Discovered automatically via the service registry ({@code @Service.Singleton}).
  * Serialises the error as JSON using the spec's error schema and sets the HTTP status.</p>
- *
- * @deprecated {@link ErrorHandlerProvider} is an incubating Helidon API that may change.
  */
 {{#operations}}
-@Deprecated
 @Service.Singleton
 public class {{classname}}ErrorHandler implements ErrorHandlerProvider<{{classname}}Exception> {
 
