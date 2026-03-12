@@ -349,7 +349,7 @@ Variables flow into templates from two sources that are merged by `DefaultGenera
 
 - **`additionalProperties`** — global, always present; set in constructor and
   `processOpts()`. Available in every template without a surrounding block. Includes
-  `corsEnabled`, `ftEnabled`, `tracingEnabled`, `metricsEnabled`, `serveOpenApi`, etc.
+  `corsEnabled`, `ftEnabled`, `tracingEnabled`, `metricsEnabled`, `serverOpenApi`, etc.
 - **`OperationsMap`** — per-tag; wraps `List<CodegenOperation>` under the `operations`
   key and is also used as a flat map for tag-level variables like `helidonBasePath`,
   `hasParamValidation`, `hasFormOperations`, `errorModel`, and `classname`.
@@ -551,7 +551,7 @@ generator option is enabled:
 | `ftEnabled` | `io.helidon.fault-tolerance:helidon-fault-tolerance` |
 | `tracingEnabled` | `io.helidon.tracing:helidon-tracing` |
 | `metricsEnabled` | `io.helidon.metrics:helidon-metrics-api` |
-| `serveOpenApi` | `io.helidon.openapi:helidon-openapi` |
+| `serverOpenApi` | `io.helidon.openapi:helidon-openapi` |
 
 ---
 

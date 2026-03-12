@@ -26,7 +26,7 @@ until the API stabilises.
 ### 1. Build and install the generator
 
 ```bash
-cd openapi-gen
+cd helidon-se-declarative-openapi-gen
 mvn install -DskipTests
 ```
 
@@ -97,8 +97,8 @@ Set options under `<configOptions>` in the plugin configuration.
 | `invokerPackage` | `io.helidon.example` | Package for `Main.java` |
 | `generateClient` | `true` | Emit a `{Tag}Client.java` REST client stub per tag |
 | `generateErrorHandler` | `true` | Emit `{Tag}Exception.java` + `{Tag}ErrorHandler.java` per tag |
-| `serveOpenApi` | `true` | Add `helidon-openapi` dependency (serves spec at `/openapi`) |
-| `serveBasePath` | *(from spec)* | Base path prefix prepended to all endpoint paths |
+| `serverOpenApi` | `true` | Add `helidon-openapi` dependency (serves spec at `/openapi`) |
+| `serverBasePath` | *(from spec)* | Base path prefix prepended to all endpoint paths |
 | `corsEnabled` | `false` | Add `@Cors.Defaults` to every endpoint class and `helidon-webserver-cors` dependency |
 | `ftEnabled` | `false` | Add `@Ft.Retry` to every REST client interface and `helidon-fault-tolerance` dependency |
 | `tracingEnabled` | `false` | Add `@Tracing.Traced` to every endpoint class and `helidon-tracing` dependency |

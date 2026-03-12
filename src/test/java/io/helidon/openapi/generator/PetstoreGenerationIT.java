@@ -339,6 +339,14 @@ class PetstoreGenerationIT {
     }
 
     @Test
+    void pomXml_disablesShadePlugin() throws IOException {
+        String pom = read(outputDir.resolve("pom.xml").toFile());
+        assertThat(pom)
+                .contains("<artifactId>maven-shade-plugin</artifactId>")
+                .contains("<skip>true</skip>");
+    }
+
+    @Test
     void client_hasDeclarativeEndpointAnnotation() throws IOException {
         assertThat(read(apiFile("PetsClient.java")))
                 .contains("@RestClient.Endpoint(\"${app.client.endpoint:http://localhost:8080}\")");

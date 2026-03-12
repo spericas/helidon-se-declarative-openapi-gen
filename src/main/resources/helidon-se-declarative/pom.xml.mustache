@@ -82,13 +82,13 @@
         </dependency>
         {{/metricsEnabled}}
 
-        {{#serveOpenApi}}
+        {{#serverOpenApi}}
         <!-- OpenAPI — serves spec at /openapi from META-INF/openapi.yaml -->
         <dependency>
             <groupId>io.helidon.openapi</groupId>
             <artifactId>helidon-openapi</artifactId>
         </dependency>
-        {{/serveOpenApi}}
+        {{/serverOpenApi}}
 
         <!-- YAML configuration -->
         <dependency>
@@ -163,6 +163,15 @@
 
     <build>
         <plugins>
+            <!-- Disable shaded/fat-jar packaging for generated projects -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
             <!--
                 Annotation processor bundle — generates service descriptors, endpoint
                 routing wiring, and ApplicationBinding at compile time.
