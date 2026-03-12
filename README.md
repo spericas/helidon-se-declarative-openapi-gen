@@ -124,7 +124,6 @@ For each OpenAPI **schema** (excluding array aliases):
 | File | Description |
 |------|-------------|
 | `{Model}.java` | Helidon build-time JSON binding POJO with `@Json.Entity`; `@Json.Required` on required fields; inner enum types; field initialisers for defaults |
-| `{Model}Test.java` | JUnit 5 unit test stub that instantiates the model class |
 
 Supporting files (one per project):
 
