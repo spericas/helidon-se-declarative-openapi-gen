@@ -44,7 +44,7 @@ import static org.openapitools.codegen.utils.StringUtils.camelize;
  *   <li>{Tag}Endpoint.java — {@code @RestServer.Endpoint @Service.Singleton} implementation</li>
  *   <li>{Tag}Client.java — {@code @RestClient.Endpoint} interface (if generateClient=true)</li>
  *   <li>{Tag}Exception.java — RuntimeException subclass (if generateErrorHandler=true)</li>
- *   <li>{Tag}ErrorHandler.java — ErrorHandlerProvider (if generateErrorHandler=true)</li>
+ *   <li>{Tag}ErrorHandler.java — ErrorHandler implementation (if generateErrorHandler=true)</li>
  * </ul>
  * Plus per model: {Model}.java (Helidon build-time JSON binding POJO)
  * Plus supporting files: pom.xml, Main.java, application.yaml, logging.properties
@@ -55,8 +55,10 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
     static final String OPT_HELIDON_VERSION = "helidonVersion";
     static final String OPT_GENERATE_CLIENT = "generateClient";
     static final String OPT_GENERATE_ERROR_HANDLER = "generateErrorHandler";
-    static final String OPT_SERVE_OPENAPI = "serveOpenApi";
-    static final String OPT_SERVE_BASE_PATH = "serveBasePath";
+    static final String OPT_SERVER_OPENAPI = "serverOpenApi";
+    static final String OPT_SERVER_BASE_PATH = "serverBasePath";
+    static final String OPT_LEGACY_SERVE_OPENAPI = "serveOpenApi";
+    static final String OPT_LEGACY_SERVE_BASE_PATH = "serveBasePath";
     static final String OPT_CORS_ENABLED = "corsEnabled";
     static final String OPT_FT_ENABLED = "ftEnabled";
     static final String OPT_TRACING_ENABLED = "tracingEnabled";
@@ -65,8 +67,8 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
     private String helidonVersion = "4.4.0";
     private boolean generateClient = true;
     private boolean generateErrorHandler = true;
-    private boolean serveOpenApi = true;
-    private String serveBasePath = "";
+    private boolean serverOpenApi = true;
+    private String serverBasePath = "";
     private boolean corsEnabled = false;
     private boolean ftEnabled = false;
     private boolean tracingEnabled = false;
@@ -101,9 +103,8 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // Template for per-model files
         modelTemplateFiles.put("model.mustache", ".java");
-        // Unit test templates for generated API and model classes
+        // Unit test template for generated API classes
         apiTestTemplateFiles.put("api-test.mustache", ".java");
-        modelTestTemplateFiles.put("model-test.mustache", ".java");
 
         // Supporting files (processed as Mustache templates)
         supportingFiles.add(new SupportingFile("pom.xml.mustache", "", "pom.xml"));
@@ -122,14 +123,14 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
                 "Generate @RestClient.Endpoint interface per tag",
                 String.valueOf(generateClient));
         addOption(OPT_GENERATE_ERROR_HANDLER,
-                "Generate Exception + ErrorHandlerProvider classes per tag",
+                "Generate Exception + ErrorHandler classes per tag",
                 String.valueOf(generateErrorHandler));
-        addOption(OPT_SERVE_OPENAPI,
+        addOption(OPT_SERVER_OPENAPI,
                 "Copy spec to META-INF/openapi.yaml and add helidon-openapi dependency",
-                String.valueOf(serveOpenApi));
-        addOption(OPT_SERVE_BASE_PATH,
+                String.valueOf(serverOpenApi));
+        addOption(OPT_SERVER_BASE_PATH,
                 "Base path prefix to add in front of all endpoint paths (e.g. /v1)",
-                serveBasePath);
+                serverBasePath);
         addOption(OPT_CORS_ENABLED,
                 "Add @Cors.Defaults to every endpoint class (enables CORS via application.yaml configuration)",
                 String.valueOf(corsEnabled));
@@ -182,12 +183,17 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
             generateErrorHandler = Boolean.parseBoolean(
                     additionalProperties.get(OPT_GENERATE_ERROR_HANDLER).toString());
         }
-        if (additionalProperties.containsKey(OPT_SERVE_OPENAPI)) {
-            serveOpenApi = Boolean.parseBoolean(
-                    additionalProperties.get(OPT_SERVE_OPENAPI).toString());
+        if (additionalProperties.containsKey(OPT_SERVER_OPENAPI)) {
+            serverOpenApi = Boolean.parseBoolean(
+                    additionalProperties.get(OPT_SERVER_OPENAPI).toString());
+        } else if (additionalProperties.containsKey(OPT_LEGACY_SERVE_OPENAPI)) {
+            serverOpenApi = Boolean.parseBoolean(
+                    additionalProperties.get(OPT_LEGACY_SERVE_OPENAPI).toString());
         }
-        if (additionalProperties.containsKey(OPT_SERVE_BASE_PATH)) {
-            serveBasePath = additionalProperties.get(OPT_SERVE_BASE_PATH).toString();
+        if (additionalProperties.containsKey(OPT_SERVER_BASE_PATH)) {
+            serverBasePath = additionalProperties.get(OPT_SERVER_BASE_PATH).toString();
+        } else if (additionalProperties.containsKey(OPT_LEGACY_SERVE_BASE_PATH)) {
+            serverBasePath = additionalProperties.get(OPT_LEGACY_SERVE_BASE_PATH).toString();
         }
         if (additionalProperties.containsKey(OPT_CORS_ENABLED)) {
             corsEnabled = Boolean.parseBoolean(
@@ -210,8 +216,8 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         additionalProperties.put("helidonVersion", helidonVersion);
         additionalProperties.put("generateClient", generateClient);
         additionalProperties.put("generateErrorHandler", generateErrorHandler);
-        additionalProperties.put("serveOpenApi", serveOpenApi);
-        additionalProperties.put("serveBasePath", serveBasePath);
+        additionalProperties.put("serverOpenApi", serverOpenApi);
+        additionalProperties.put("serverBasePath", serverBasePath);
         additionalProperties.put("corsEnabled", corsEnabled);
         additionalProperties.put("ftEnabled", ftEnabled);
         additionalProperties.put("tracingEnabled", tracingEnabled);
@@ -226,7 +232,7 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
             apiTemplateFiles.put("errorHandler.mustache", "ErrorHandler.java");
         }
 
-        if (serveOpenApi) {
+        if (serverOpenApi) {
             supportingFiles.add(new SupportingFile(
                     "openapi.yaml.mustache", "src/main/resources/META-INF", "openapi.yaml"));
         }
@@ -272,6 +278,16 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         };
     }
 
+    @Override
+    public String apiTestFilename(String templateName, String tag) {
+        String base = camelize(sanitizeName(tag));
+        String folder = apiTestFileFolder();
+        return switch (templateName) {
+            case "api-test.mustache" -> folder + File.separator + base + "EndpointTest.java";
+            default -> super.apiTestFilename(templateName, tag);
+        };
+    }
+
     // -------------------------------------------------------------------------
     // Spec pre-processing: extract server base path
     // -------------------------------------------------------------------------
@@ -286,10 +302,9 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
                 URI uri = new URI(serverUrl);
                 String path = uri.getPath();
                 if (path != null && !path.isEmpty() && !"/".equals(path)) {
-                    additionalProperties.put("serverBasePath", path);
-                    // Only set serveBasePath from URL if not explicitly configured
-                    if (serveBasePath.isEmpty()) {
-                        additionalProperties.put("serveBasePath", path);
+                    // Only set serverBasePath from URL if not explicitly configured
+                    if (serverBasePath.isEmpty()) {
+                        additionalProperties.put("serverBasePath", path);
                     }
                 }
             } catch (Exception ignored) {
@@ -299,7 +314,7 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // Serialize the spec so the openapi.yaml.mustache template can write it to
         // src/main/resources/META-INF/openapi.yaml (picked up by helidon-openapi at runtime)
-        if (serveOpenApi) {
+        if (serverOpenApi) {
             try {
                 String yamlContent = io.swagger.v3.core.util.Yaml.pretty()
                         .writeValueAsString(openAPI);
@@ -343,6 +358,12 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
         // HTTP method annotation string (e.g. "@Http.GET")
         op.vendorExtensions.put("x-http-annotation", "@Http." + httpMethod.toUpperCase());
+        if (op.operationId != null && !op.operationId.isEmpty()) {
+            op.vendorExtensions.put("x-operation-id-capitalized",
+                    Character.toUpperCase(op.operationId.charAt(0)) + op.operationId.substring(1));
+        } else {
+            op.vendorExtensions.put("x-operation-id-capitalized", "Operation");
+        }
 
         // Determine the @Http.Consumes media type constant for this operation
         if (op.hasConsumes && op.consumes != null && !op.consumes.isEmpty()) {
@@ -552,6 +573,10 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         result.put("hasParamValidation", anyParamValidation);
         result.put("hasFormOperations", anyFormOperations);
         result.put("hasMultipartOperations", anyMultipartOperations);
+        if (anyParamValidation) {
+            // Needed by pom.xml.mustache when only parameters (not models) use @Validation.*
+            additionalProperties.put("hasValidation", Boolean.TRUE);
+        }
 
         // Also expose classname in operations context for templates that need it
         String tagBaseName = opList.get(0).baseName != null && !opList.get(0).baseName.isBlank()

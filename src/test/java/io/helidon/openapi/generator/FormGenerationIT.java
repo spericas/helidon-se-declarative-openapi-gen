@@ -48,21 +48,21 @@ class FormGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void apiInterface_formUrlEncoded_hasCorrectConsumes() throws IOException {
+    void apiInterfaceFormUrlEncodedHasCorrectConsumes() throws IOException {
         assertThat(read(apiFile("FormsApi.java")))
                 .contains("@Http.Consumes(MediaTypes.APPLICATION_FORM_URLENCODED_VALUE)");
     }
 
     @Test
-    void endpoint_formUrlEncoded_hasParametersBodyParam() throws IOException {
+    void endpointFormUrlEncodedHasParametersBodyParam() throws IOException {
         assertThat(read(apiFile("FormsEndpoint.java")))
                 .contains("Parameters formBody");
     }
 
     @Test
-    void endpoint_formUrlEncoded_importsParameters() throws IOException {
+    void endpointFormUrlEncodedImportsParameters() throws IOException {
         assertThat(read(apiFile("FormsEndpoint.java")))
-                .contains("import io.helidon.http.Parameters;");
+                .contains("import io.helidon.common.parameters.Parameters;");
     }
 
     // -------------------------------------------------------------------------
@@ -70,21 +70,26 @@ class FormGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void apiInterface_multipart_hasCorrectConsumes() throws IOException {
+    void apiInterfaceMultipartHasCorrectConsumes() throws IOException {
         assertThat(read(apiFile("FormsApi.java")))
                 .contains("@Http.Consumes(MediaTypes.MULTIPART_FORM_DATA_VALUE)");
     }
 
     @Test
-    void endpoint_multipart_hasReadableEntityBodyParam() throws IOException {
+    void endpointMultipartHasReadableEntityBodyParam() throws IOException {
         assertThat(read(apiFile("FormsEndpoint.java")))
                 .contains("ReadableEntity formBody");
     }
 
     @Test
-    void endpoint_multipart_importsReadableEntity() throws IOException {
+    void endpointMultipartImportsReadableEntity() throws IOException {
         assertThat(read(apiFile("FormsEndpoint.java")))
                 .contains("import io.helidon.http.media.ReadableEntity;");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     // -------------------------------------------------------------------------

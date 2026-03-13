@@ -44,34 +44,34 @@ class SecurityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_implementsApi_contract() throws IOException {
+    void endpointImplementsApiContract() throws IOException {
         assertThat(read(apiFile("ItemsEndpoint.java")))
                 .contains("implements ItemsApi");
     }
 
     @Test
-    void endpoint_securedMethod_hasSecurityContextParam() throws IOException {
+    void endpointSecuredMethodHasSecurityContextParam() throws IOException {
         // createItem is secured → SecurityContext injected as unannotated param
         assertThat(read(apiFile("ItemsEndpoint.java")))
                 .contains("SecurityContext securityContext");
     }
 
     @Test
-    void endpoint_multiRoleMethod_hasArrayAnnotation() throws IOException {
+    void endpointMultiRoleMethodHasArrayAnnotation() throws IOException {
         // deleteItem has security: [{basicAuth: [admin, moderator]}] on the API interface
         assertThat(read(apiFile("ItemsApi.java")))
                 .contains("@RoleValidator.Roles({\"admin\", \"moderator\"})");
     }
 
     @Test
-    void apiInterface_securedMethod_hasRoleValidatorAnnotation() throws IOException {
+    void apiInterfaceSecuredMethodHasRoleValidatorAnnotation() throws IOException {
         // createItem has security: [{basicAuth: [admin]}]
         assertThat(read(apiFile("ItemsApi.java")))
                 .contains("@RoleValidator.Roles(\"admin\")");
     }
 
     @Test
-    void endpoint_hasSecurityImports() throws IOException {
+    void endpointHasSecurityImports() throws IOException {
         String content = read(apiFile("ItemsEndpoint.java"));
         assertThat(content).contains("import io.helidon.security.SecurityContext;");
     }
@@ -81,20 +81,20 @@ class SecurityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void interface_securedMethod_hasRoleValidatorAnnotation() throws IOException {
+    void interfaceSecuredMethodHasRoleValidatorAnnotation() throws IOException {
         assertThat(read(apiFile("ItemsApi.java")))
                 .contains("@RoleValidator.Roles(\"admin\")");
     }
 
     @Test
-    void interface_hasNoSecurityContextParam() throws IOException {
+    void interfaceHasNoSecurityContextParam() throws IOException {
         // SecurityContext is server-side only — must not appear in the interface
         assertThat(read(apiFile("ItemsApi.java")))
                 .doesNotContain("SecurityContext");
     }
 
     @Test
-    void interface_hasRoleValidatorImport() throws IOException {
+    void interfaceHasRoleValidatorImport() throws IOException {
         assertThat(read(apiFile("ItemsApi.java")))
                 .contains("import io.helidon.security.abac.role.RoleValidator;");
     }
@@ -104,7 +104,7 @@ class SecurityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void pom_hasHelidonSecurityDependency() throws IOException {
+    void pomHasHelidonSecurityDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile().toPath()))
                 .contains("helidon-security")
                 .contains("helidon-webserver-security")
@@ -117,9 +117,14 @@ class SecurityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void applicationYaml_hasSecurity_showsRequiredComment() throws IOException {
+    void applicationYamlHasSecurityShowsRequiredComment() throws IOException {
         assertThat(read(outputDir.resolve("src/main/resources/application.yaml")))
                 .contains("required: one or more operations use @RoleValidator.Roles");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     // -------------------------------------------------------------------------

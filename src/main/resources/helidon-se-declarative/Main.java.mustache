@@ -39,6 +39,6 @@ public final class Main {
 
         WebServer webServer = Services.get(WebServer.class);
         System.out.println("Server started at: http://localhost:" + webServer.port());
-        {{#serveOpenApi}}System.out.println("OpenAPI spec:      http://localhost:" + webServer.port() + "/openapi");{{/serveOpenApi}}
+        {{#serverOpenApi}}System.out.println("OpenAPI spec:      http://localhost:" + webServer.port() + "/openapi");{{/serverOpenApi}}
     }
 }

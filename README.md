@@ -26,7 +26,7 @@ until the API stabilises.
 ### 1. Build and install the generator
 
 ```bash
-cd openapi-gen
+cd helidon-se-declarative-openapi-gen
 mvn install -DskipTests
 ```
 
@@ -97,8 +97,8 @@ Set options under `<configOptions>` in the plugin configuration.
 | `invokerPackage` | `io.helidon.example` | Package for `Main.java` |
 | `generateClient` | `true` | Emit a `{Tag}Client.java` REST client stub per tag |
 | `generateErrorHandler` | `true` | Emit `{Tag}Exception.java` + `{Tag}ErrorHandler.java` per tag |
-| `serveOpenApi` | `true` | Add `helidon-openapi` dependency (serves spec at `/openapi`) |
-| `serveBasePath` | *(from spec)* | Base path prefix prepended to all endpoint paths |
+| `serverOpenApi` | `true` | Add `helidon-openapi` dependency (serves spec at `/openapi`) |
+| `serverBasePath` | *(from spec)* | Base path prefix prepended to all endpoint paths |
 | `corsEnabled` | `false` | Add `@Cors.Defaults` to every endpoint class and `helidon-webserver-cors` dependency |
 | `ftEnabled` | `false` | Add `@Ft.Retry` to every REST client interface and `helidon-fault-tolerance` dependency |
 | `tracingEnabled` | `false` | Add `@Tracing.Traced` to every endpoint class and `helidon-tracing` dependency |
@@ -124,7 +124,6 @@ For each OpenAPI **schema** (excluding array aliases):
 | File | Description |
 |------|-------------|
 | `{Model}.java` | Helidon build-time JSON binding POJO with `@Json.Entity`; `@Json.Required` on required fields; inner enum types; field initialisers for defaults |
-| `{Model}Test.java` | JUnit 5 unit test stub that instantiates the model class |
 
 Supporting files (one per project):
 
@@ -237,6 +236,30 @@ openapi-gen/
             ├── application.yaml.mustache            Server + security configuration
             └── logging.properties.mustache          JUL logging
 ```
+
+---
+
+## Running Maven Build Verification Tests
+
+Integration tests include `generatedProject_buildsWithMaven` checks that run
+`mvn package -DskipTests` inside generated output projects.
+
+These checks are disabled by default and only run when this system property is set:
+
+- `helidon.codegen.it.buildsWithMaven`
+
+Examples:
+
+```bash
+# Default behavior: build-verification tests are skipped
+mvn test
+
+# Enable generated-project Maven build verification
+mvn test -Dhelidon.codegen.it.buildsWithMaven=true
+```
+
+This is useful for environments without external Maven repository access, where dependency
+resolution may not be possible.
 
 ---
 

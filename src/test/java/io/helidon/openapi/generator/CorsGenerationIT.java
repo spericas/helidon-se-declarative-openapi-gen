@@ -45,21 +45,26 @@ class CorsGenerationIT {
     }
 
     @Test
-    void endpoint_hasCorsDefaultsAnnotation() throws IOException {
+    void endpointHasCorsDefaultsAnnotation() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("@Cors.Defaults");
     }
 
     @Test
-    void endpoint_importsCors() throws IOException {
+    void endpointImportsCors() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("import io.helidon.webserver.cors.Cors;");
     }
 
     @Test
-    void pom_hasCorsDependency() throws IOException {
+    void pomHasCorsDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile()))
                 .contains("helidon-webserver-cors");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     private File apiFile(String name) {

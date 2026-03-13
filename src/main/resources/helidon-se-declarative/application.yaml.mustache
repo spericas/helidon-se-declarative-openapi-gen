@@ -11,10 +11,10 @@ app:
     endpoint: "http://localhost:8080"
 {{/generateClient}}
 
-{{#serveOpenApi}}
+{{#serverOpenApi}}
 # OpenAPI endpoint is auto-discovered from META-INF/openapi.yaml on the classpath.
 # Access at: GET /openapi
-{{/serveOpenApi}}
+{{/serverOpenApi}}
 
 {{#hasSecurity}}
 # ---

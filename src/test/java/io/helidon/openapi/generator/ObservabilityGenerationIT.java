@@ -50,19 +50,19 @@ class ObservabilityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_hasTracingTracedAnnotation() throws IOException {
+    void endpointHasTracingTracedAnnotation() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("@Tracing.Traced");
     }
 
     @Test
-    void endpoint_importsTracing() throws IOException {
+    void endpointImportsTracing() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("import io.helidon.tracing.Tracing;");
     }
 
     @Test
-    void pom_hasTracingDependency() throws IOException {
+    void pomHasTracingDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile()))
                 .contains("helidon-tracing");
     }
@@ -72,21 +72,26 @@ class ObservabilityGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void endpoint_hasMetricsTimedAnnotation() throws IOException {
+    void endpointHasMetricsTimedAnnotation() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("@Metrics.Timed");
     }
 
     @Test
-    void endpoint_importsMetrics() throws IOException {
+    void endpointImportsMetrics() throws IOException {
         assertThat(read(apiFile("PetsEndpoint.java")))
                 .contains("import io.helidon.metrics.api.Metrics;");
     }
 
     @Test
-    void pom_hasMetricsDependency() throws IOException {
+    void pomHasMetricsDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile()))
                 .contains("helidon-metrics-api");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     private File apiFile(String name) {

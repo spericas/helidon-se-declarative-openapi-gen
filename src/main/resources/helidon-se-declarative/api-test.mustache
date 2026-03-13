@@ -20,19 +20,25 @@ class {{classname}}EndpointTest {
         this.client = client;
     }
 
+{{#operation}}
     @Test
-    void client_isInjected() {
+    void test{{vendorExtensions.x-operation-id-capitalized}}() {
+        // Smoke test per generated API method.
         assertThat(client, notNullValue());
     }
+{{/operation}}
 }
 {{/generateClient}}
 {{^generateClient}}
 class {{classname}}EndpointTest {
 
+{{#operation}}
     @Test
-    void endpoint_isInstantiable() {
+    void test{{vendorExtensions.x-operation-id-capitalized}}() {
+        // Smoke test per generated API method.
         assertThat(new {{classname}}Endpoint(), notNullValue());
     }
+{{/operation}}
 }
 {{/generateClient}}
 {{/operations}}

@@ -45,21 +45,26 @@ class FtGenerationIT {
     }
 
     @Test
-    void client_hasFtRetryAnnotation() throws IOException {
+    void clientHasFtRetryAnnotation() throws IOException {
         assertThat(read(apiFile("PetsClient.java")))
                 .contains("@Ft.Retry");
     }
 
     @Test
-    void client_importsFt() throws IOException {
+    void clientImportsFt() throws IOException {
         assertThat(read(apiFile("PetsClient.java")))
                 .contains("import io.helidon.faulttolerance.Ft;");
     }
 
     @Test
-    void pom_hasFaultToleranceDependency() throws IOException {
+    void pomHasFaultToleranceDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile()))
                 .contains("helidon-fault-tolerance");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     private File apiFile(String name) {

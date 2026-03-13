@@ -48,13 +48,13 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void itemModel_hasValidatedAnnotation() throws IOException {
+    void itemModelHasValidatedAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.Validated");
     }
 
     @Test
-    void itemModel_importsValidation() throws IOException {
+    void itemModelImportsValidation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("import io.helidon.validation.Validation;");
     }
@@ -64,13 +64,13 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void itemModel_name_hasLengthAnnotation() throws IOException {
+    void itemModelNameHasLengthAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.String.Length(min = 1, value = 100)");
     }
 
     @Test
-    void itemModel_name_hasPatternAnnotation() throws IOException {
+    void itemModelNameHasPatternAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.String.Pattern(");
     }
@@ -80,13 +80,13 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void itemModel_quantity_hasMinAnnotation() throws IOException {
+    void itemModelQuantityHasMinAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.Integer.Min(0)");
     }
 
     @Test
-    void itemModel_quantity_hasMaxAnnotation() throws IOException {
+    void itemModelQuantityHasMaxAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.Integer.Max(1000)");
     }
@@ -96,7 +96,7 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void itemModel_price_hasNumberMinAnnotation() throws IOException {
+    void itemModelPriceHasNumberMinAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.Number.Min(\"0.01\")");
     }
@@ -106,7 +106,7 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void itemModel_tags_hasSizeAnnotation() throws IOException {
+    void itemModelTagsHasSizeAnnotation() throws IOException {
         assertThat(read(modelFile("Item.java")))
                 .contains("@Validation.Collection.Size(min = 1, value = 20)");
     }
@@ -116,9 +116,14 @@ class ValidationGenerationIT {
     // -------------------------------------------------------------------------
 
     @Test
-    void pom_hasValidationDependency() throws IOException {
+    void pomHasValidationDependency() throws IOException {
         assertThat(read(outputDir.resolve("pom.xml").toFile()))
                 .contains("helidon-validation");
+    }
+
+    @Test
+    void generatedProjectBuildsWithMaven() throws Exception {
+        GeneratedProjectBuildSupport.assertMavenPackageSucceeds(outputDir);
     }
 
     // -------------------------------------------------------------------------

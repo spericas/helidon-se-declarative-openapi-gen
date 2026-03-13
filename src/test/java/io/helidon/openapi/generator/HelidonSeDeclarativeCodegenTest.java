@@ -24,17 +24,17 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void getName_returnsCorrectId() {
+    void getNameReturnsCorrectId() {
         assertThat(codegen.getName()).isEqualTo("helidon-se-declarative");
     }
 
     @Test
-    void getTag_isServer() {
+    void getTagIsServer() {
         assertThat(codegen.getTag()).isEqualTo(CodegenType.SERVER);
     }
 
     @Test
-    void getHelp_isNotBlank() {
+    void getHelpIsNotBlank() {
         assertThat(codegen.getHelp()).isNotBlank();
     }
 
@@ -43,27 +43,27 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void toApiName_simpleTag_returnsCamelCase() {
+    void toApiNameSimpleTagReturnsCamelCase() {
         assertThat(codegen.toApiName("pets")).isEqualTo("Pets");
     }
 
     @Test
-    void toApiName_emptyTag_returnsDefault() {
+    void toApiNameEmptyTagReturnsDefault() {
         assertThat(codegen.toApiName("")).isEqualTo("Default");
     }
 
     @Test
-    void toApiName_nullTag_returnsDefault() {
+    void toApiNameNullTagReturnsDefault() {
         assertThat(codegen.toApiName(null)).isEqualTo("Default");
     }
 
     @Test
-    void toApiName_hyphenatedTag_returnsCamelCase() {
+    void toApiNameHyphenatedTagReturnsCamelCase() {
         assertThat(codegen.toApiName("pet-store")).isEqualTo("PetStore");
     }
 
     @Test
-    void toApiName_multiWordTag_returnsCamelCase() {
+    void toApiNameMultiWordTagReturnsCamelCase() {
         assertThat(codegen.toApiName("store orders")).isEqualTo("StoreOrders");
     }
 
@@ -72,13 +72,13 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void toModelName_errorMappedToApiError() {
+    void toModelNameErrorMappedToApiError() {
         // "Error" clashes with java.lang.Error — must be remapped
         assertThat(codegen.toModelName("Error")).isEqualTo("ApiError");
     }
 
     @Test
-    void toModelName_petUnchanged() {
+    void toModelNamePetUnchanged() {
         assertThat(codegen.toModelName("Pet")).isEqualTo("Pet");
     }
 
@@ -87,31 +87,31 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void apiFilename_apiMustache_producesEndpointJava() {
+    void apiFilenameApiMustacheProducesEndpointJava() {
         String filename = codegen.apiFilename("api.mustache", "pets");
         assertThat(filename).endsWith("PetsEndpoint.java");
     }
 
     @Test
-    void apiFilename_apiInterfaceMustache_producesApiJava() {
+    void apiFilenameApiInterfaceMustacheProducesApiJava() {
         String filename = codegen.apiFilename("api-interface.mustache", "pets");
         assertThat(filename).endsWith("PetsApi.java");
     }
 
     @Test
-    void apiFilename_restClientMustache_producesClientJava() {
+    void apiFilenameRestClientMustacheProducesClientJava() {
         String filename = codegen.apiFilename("restClient.mustache", "pets");
         assertThat(filename).endsWith("PetsClient.java");
     }
 
     @Test
-    void apiFilename_apiExceptionMustache_producesExceptionJava() {
+    void apiFilenameApiExceptionMustacheProducesExceptionJava() {
         String filename = codegen.apiFilename("apiException.mustache", "pets");
         assertThat(filename).endsWith("PetsException.java");
     }
 
     @Test
-    void apiFilename_errorHandlerMustache_producesErrorHandlerJava() {
+    void apiFilenameErrorHandlerMustacheProducesErrorHandlerJava() {
         String filename = codegen.apiFilename("errorHandler.mustache", "pets");
         assertThat(filename).endsWith("PetsErrorHandler.java");
     }
@@ -121,23 +121,23 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void constructor_registersApiAndApiInterfaceTemplates() {
+    void constructorRegistersApiAndApiInterfaceTemplates() {
         assertThat(codegen.apiTemplateFiles())
                 .containsKey("api.mustache")
                 .containsKey("api-interface.mustache");
     }
 
     @Test
-    void constructor_registersModelTemplate() {
+    void constructorRegistersModelTemplate() {
         assertThat(codegen.modelTemplateFiles()).containsKey("model.mustache");
     }
 
     @Test
-    void constructor_clearsDocTemplates_andRegistersUnitTestTemplates() {
+    void constructorClearsDocTemplatesAndRegistersUnitTestTemplates() {
         assertThat(codegen.modelDocTemplateFiles()).isEmpty();
         assertThat(codegen.apiDocTemplateFiles()).isEmpty();
         assertThat(codegen.apiTestTemplateFiles()).containsEntry("api-test.mustache", ".java");
-        assertThat(codegen.modelTestTemplateFiles()).containsEntry("model-test.mustache", ".java");
+        assertThat(codegen.modelTestTemplateFiles()).isEmpty();
     }
 
     // -------------------------------------------------------------------------
@@ -145,7 +145,7 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void singleSecurityRole_formattedAsQuotedString() {
+    void singleSecurityRoleFormattedAsQuotedString() {
         // x-roles-annotation-value for a single role: "admin"
         // Verify via fromOperation by checking the vendor extension directly
         io.swagger.v3.oas.models.Operation op = new io.swagger.v3.oas.models.Operation();
@@ -158,7 +158,7 @@ class HelidonSeDeclarativeCodegenTest {
     }
 
     @Test
-    void multipleSecurityRoles_formattedAsArray() {
+    void multipleSecurityRolesFormattedAsArray() {
         io.swagger.v3.oas.models.Operation op = new io.swagger.v3.oas.models.Operation();
         op.addSecurityItem(new io.swagger.v3.oas.models.security.SecurityRequirement()
                 .addList("basicAuth", java.util.List.of("admin", "moderator")));
@@ -169,7 +169,7 @@ class HelidonSeDeclarativeCodegenTest {
     }
 
     @Test
-    void noSecurity_noSecurityVendorExtensions() {
+    void noSecurityNoSecurityVendorExtensions() {
         io.swagger.v3.oas.models.Operation op = new io.swagger.v3.oas.models.Operation();
         org.openapitools.codegen.CodegenOperation cop =
                 codegen.fromOperation("/items", "get", op, java.util.List.of());
@@ -183,7 +183,7 @@ class HelidonSeDeclarativeCodegenTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void defaultPackages_matchExpectedValues() {
+    void defaultPackagesMatchExpectedValues() {
         assertThat(codegen.apiPackage()).isEqualTo("io.helidon.example.api");
         assertThat(codegen.modelPackage()).isEqualTo("io.helidon.example.model");
         assertThat(codegen.getInvokerPackage()).isEqualTo("io.helidon.example");

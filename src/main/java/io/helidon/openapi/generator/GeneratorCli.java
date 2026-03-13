@@ -11,12 +11,13 @@ import org.openapitools.codegen.config.CodegenConfigurator;
  *
  * <p>Usage:
  * <pre>
- *   java -jar target/...-shaded.jar generate \
+ *   java -jar target/helidon-se-declarative-generator-1.0-SNAPSHOT.jar generate \
  *     -g helidon-se-declarative \
  *     -i /path/to/spec.yaml \
  *     -o /path/to/output \
  *     [--additional-properties key=value,...]
  * </pre>
+ * Runtime dependencies are copied to {@code target/libs} during packaging.
  * </p>
  */
 public class GeneratorCli {
