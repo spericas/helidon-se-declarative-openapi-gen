@@ -573,6 +573,10 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
         result.put("hasParamValidation", anyParamValidation);
         result.put("hasFormOperations", anyFormOperations);
         result.put("hasMultipartOperations", anyMultipartOperations);
+        if (anyParamValidation) {
+            // Needed by pom.xml.mustache when only parameters (not models) use @Validation.*
+            additionalProperties.put("hasValidation", Boolean.TRUE);
+        }
 
         // Also expose classname in operations context for templates that need it
         String tagBaseName = opList.get(0).baseName != null && !opList.get(0).baseName.isBlank()

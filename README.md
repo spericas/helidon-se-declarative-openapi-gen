@@ -239,6 +239,30 @@ openapi-gen/
 
 ---
 
+## Running Maven Build Verification Tests
+
+Integration tests include `generatedProject_buildsWithMaven` checks that run
+`mvn package -DskipTests` inside generated output projects.
+
+These checks are disabled by default and only run when this system property is set:
+
+- `helidon.codegen.it.buildsWithMaven`
+
+Examples:
+
+```bash
+# Default behavior: build-verification tests are skipped
+mvn test
+
+# Enable generated-project Maven build verification
+mvn test -Dhelidon.codegen.it.buildsWithMaven=true
+```
+
+This is useful for environments without external Maven repository access, where dependency
+resolution may not be possible.
+
+---
+
 ## Extending the generator
 
 The generator is a standard Java class that extends `AbstractJavaCodegen`. Common
