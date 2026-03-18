@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.servers.Server;
 import org.openapitools.codegen.CodegenModel;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
@@ -35,16 +38,11 @@ import org.openapitools.codegen.CodegenProperty;
 import org.openapitools.codegen.CodegenResponse;
 import org.openapitools.codegen.CodegenType;
 import org.openapitools.codegen.SupportingFile;
-
-import io.swagger.v3.oas.models.media.Schema;
 import org.openapitools.codegen.languages.AbstractJavaCodegen;
 import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.ModelsMap;
 import org.openapitools.codegen.model.OperationMap;
 import org.openapitools.codegen.model.OperationsMap;
-
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.servers.Server;
 
 import static org.openapitools.codegen.utils.StringUtils.camelize;
 
@@ -90,6 +88,9 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
     private boolean tracingEnabled = false;
     private boolean metricsEnabled = false;
 
+    /**
+     * Creates a new generator with default options and template mappings.
+     */
     public HelidonSeDeclarativeCodegen() {
         super();
 
@@ -270,7 +271,7 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
     }
 
     /**
-     * Custom filename per template so the output naming matches the plan:
+     * Custom filename per template so the output naming matches the plan.
      * <ul>
      *   <li>api.mustache          → {Tag}Endpoint.java</li>
      *   <li>api-interface.mustache → {Tag}Api.java</li>
@@ -645,33 +646,32 @@ public class HelidonSeDeclarativeCodegen extends AbstractJavaCodegen {
 
             String className = apiClassName + classSuffix;
             Path file = Path.of(apiFolder, className + ".java");
-            String content = """
-                    package %s;
-
-                    import java.util.Optional;
-
-                    import io.helidon.http.Header;
-                    import io.helidon.http.HeaderName;
-                    import io.helidon.http.Http;
-                    import io.helidon.service.registry.Service;
-
-                    /**
-                     * Computes the {@code %s} response header.
-                     */
-                    @Service.Singleton
-                    @Service.Named("%s")
-                    public class %s implements Http.HeaderFunction {
-
-                        @Override
-                        public Optional<Header> apply(HeaderName headerName) {
-                            // TODO: compute the %s response header value, or return Optional.empty() to omit it
-                            return Optional.empty();
-                        }
-                    }
-                    """.formatted(apiPackage, headerName, functionName, className, headerName);
+            String content = String.format(
+                    "package %s;%n%n"
+                            + "import java.util.Optional;%n%n"
+                            + "import io.helidon.http.Header;%n"
+                            + "import io.helidon.http.HeaderName;%n"
+                            + "import io.helidon.http.Http;%n"
+                            + "import io.helidon.service.registry.Service;%n%n"
+                            + "/**%n"
+                            + " * Computes the {@code %s} response header.%n"
+                            + " */%n"
+                            + "@Service.Singleton%n"
+                            + "@Service.Named(\"%s\")%n"
+                            + "public class %s implements Http.HeaderFunction {%n%n"
+                            + "    @Override%n"
+                            + "    public Optional<Header> apply(HeaderName headerName) {%n"
+                            + "        // TODO: compute the %s response header value, or return Optional.empty() to omit it%n"
+                            + "        return Optional.empty();%n"
+                            + "    }%n"
+                            + "}%n",
+                    apiPackage, headerName, functionName, className, headerName);
 
             try {
-                Files.createDirectories(file.getParent());
+                Path parent = file.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
                 Files.writeString(file, content, StandardCharsets.UTF_8);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to generate computed header function class: " + file, e);

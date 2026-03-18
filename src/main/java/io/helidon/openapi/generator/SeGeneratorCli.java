@@ -38,6 +38,14 @@ import org.openapitools.codegen.config.CodegenConfigurator;
  */
 public class SeGeneratorCli {
 
+    private SeGeneratorCli() {
+    }
+
+    /**
+     * Generates sources from an OpenAPI specification.
+     *
+     * @param args CLI arguments
+     */
     public static void main(String[] args) {
         // Only "generate" command is supported
         if (args.length == 0 || !"generate".equals(args[0])) {
@@ -51,17 +59,28 @@ public class SeGeneratorCli {
         List<String[]> additionalProps = new ArrayList<>();
 
         for (int i = 1; i < args.length; i++) {
-            switch (args[i]) {
-                case "-g" -> generatorName = args[++i];
-                case "-i" -> inputSpec = args[++i];
-                case "-o" -> outputDir = args[++i];
+            String arg = args[i];
+            switch (arg) {
+                case "-g" -> {
+                    i++;
+                    generatorName = args[i];
+                }
+                case "-i" -> {
+                    i++;
+                    inputSpec = args[i];
+                }
+                case "-o" -> {
+                    i++;
+                    outputDir = args[i];
+                }
                 case "--additional-properties" -> {
-                    for (String kv : args[++i].split(",")) {
+                    i++;
+                    for (String kv : args[i].split(",")) {
                         String[] pair = kv.split("=", 2);
                         if (pair.length == 2) additionalProps.add(pair);
                     }
                 }
-                default -> System.err.println("Ignoring unknown arg: " + args[i]);
+                default -> System.err.println("Ignoring unknown arg: " + arg);
             }
         }
 
