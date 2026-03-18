@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.File;
@@ -13,7 +29,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration test — verifies that {@code ftEnabled=true} adds {@code @Ft.Retry} to
@@ -46,20 +63,20 @@ class FtGenerationIT {
 
     @Test
     void clientHasFtRetryAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsClient.java")))
-                .contains("@Ft.Retry");
+        assertThat(read(apiFile("PetsClient.java")),
+                   containsString("@Ft.Retry"));
     }
 
     @Test
     void clientImportsFt() throws IOException {
-        assertThat(read(apiFile("PetsClient.java")))
-                .contains("import io.helidon.faulttolerance.Ft;");
+        assertThat(read(apiFile("PetsClient.java")),
+                   containsString("import io.helidon.faulttolerance.Ft;"));
     }
 
     @Test
     void pomHasFaultToleranceDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-fault-tolerance");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("helidon-fault-tolerance"));
     }
 
     @Test

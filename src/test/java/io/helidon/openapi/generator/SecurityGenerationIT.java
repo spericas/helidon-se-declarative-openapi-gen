@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.IOException;
@@ -11,7 +27,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration test for security code generation.
@@ -45,35 +63,35 @@ class SecurityGenerationIT {
 
     @Test
     void endpointImplementsApiContract() throws IOException {
-        assertThat(read(apiFile("ItemsEndpoint.java")))
-                .contains("implements ItemsApi");
+        assertThat(read(apiFile("ItemsEndpoint.java")),
+                   containsString("implements ItemsApi"));
     }
 
     @Test
     void endpointSecuredMethodHasSecurityContextParam() throws IOException {
         // createItem is secured → SecurityContext injected as unannotated param
-        assertThat(read(apiFile("ItemsEndpoint.java")))
-                .contains("SecurityContext securityContext");
+        assertThat(read(apiFile("ItemsEndpoint.java")),
+                   containsString("SecurityContext securityContext"));
     }
 
     @Test
     void endpointMultiRoleMethodHasArrayAnnotation() throws IOException {
         // deleteItem has security: [{basicAuth: [admin, moderator]}] on the API interface
-        assertThat(read(apiFile("ItemsApi.java")))
-                .contains("@RoleValidator.Roles({\"admin\", \"moderator\"})");
+        assertThat(read(apiFile("ItemsApi.java")),
+                   containsString("@RoleValidator.Roles({\"admin\", \"moderator\"})"));
     }
 
     @Test
     void apiInterfaceSecuredMethodHasRoleValidatorAnnotation() throws IOException {
         // createItem has security: [{basicAuth: [admin]}]
-        assertThat(read(apiFile("ItemsApi.java")))
-                .contains("@RoleValidator.Roles(\"admin\")");
+        assertThat(read(apiFile("ItemsApi.java")),
+                   containsString("@RoleValidator.Roles(\"admin\")"));
     }
 
     @Test
     void endpointHasSecurityImports() throws IOException {
         String content = read(apiFile("ItemsEndpoint.java"));
-        assertThat(content).contains("import io.helidon.security.SecurityContext;");
+        assertThat(content, containsString("import io.helidon.security.SecurityContext;"));
     }
 
     // -------------------------------------------------------------------------
@@ -82,21 +100,21 @@ class SecurityGenerationIT {
 
     @Test
     void interfaceSecuredMethodHasRoleValidatorAnnotation() throws IOException {
-        assertThat(read(apiFile("ItemsApi.java")))
-                .contains("@RoleValidator.Roles(\"admin\")");
+        assertThat(read(apiFile("ItemsApi.java")),
+                   containsString("@RoleValidator.Roles(\"admin\")"));
     }
 
     @Test
     void interfaceHasNoSecurityContextParam() throws IOException {
         // SecurityContext is server-side only — must not appear in the interface
-        assertThat(read(apiFile("ItemsApi.java")))
-                .doesNotContain("SecurityContext");
+        assertThat(read(apiFile("ItemsApi.java")),
+                   not(containsString("SecurityContext")));
     }
 
     @Test
     void interfaceHasRoleValidatorImport() throws IOException {
-        assertThat(read(apiFile("ItemsApi.java")))
-                .contains("import io.helidon.security.abac.role.RoleValidator;");
+        assertThat(read(apiFile("ItemsApi.java")),
+                   containsString("import io.helidon.security.abac.role.RoleValidator;"));
     }
 
     // -------------------------------------------------------------------------
@@ -105,11 +123,11 @@ class SecurityGenerationIT {
 
     @Test
     void pomHasHelidonSecurityDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile().toPath()))
-                .contains("helidon-security")
-                .contains("helidon-webserver-security")
-                .contains("helidon-security-abac-role")
-                .contains("helidon-security-providers-abac");
+        String content = read(outputDir.resolve("pom.xml").toFile().toPath());
+        assertThat(content, containsString("helidon-security"));
+        assertThat(content, containsString("helidon-webserver-security"));
+        assertThat(content, containsString("helidon-security-abac-role"));
+        assertThat(content, containsString("helidon-security-providers-abac"));
     }
 
     // -------------------------------------------------------------------------
@@ -118,8 +136,8 @@ class SecurityGenerationIT {
 
     @Test
     void applicationYamlHasSecurityShowsRequiredComment() throws IOException {
-        assertThat(read(outputDir.resolve("src/main/resources/application.yaml")))
-                .contains("required: one or more operations use @RoleValidator.Roles");
+        assertThat(read(outputDir.resolve("src/main/resources/application.yaml")),
+                   containsString("required: one or more operations use @RoleValidator.Roles"));
     }
 
     @Test

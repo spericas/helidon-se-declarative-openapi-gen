@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.IOException;
@@ -9,7 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.opentest4j.TestAbortedException;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 final class GeneratedProjectBuildSupport {
 
@@ -46,17 +63,19 @@ final class GeneratedProjectBuildSupport {
             }
 
             String output = new String(outputBytes, StandardCharsets.UTF_8);
-            assertThat(finished)
-                    .as("Generated project Maven build timed out after %s seconds.%nOutput:%n%s",
-                            BUILD_TIMEOUT_SECONDS, output)
-                    .isTrue();
+            assertThat(
+                    String.format("Generated project Maven build timed out after %s seconds.%nOutput:%n%s",
+                            BUILD_TIMEOUT_SECONDS, output),
+                    finished,
+                    is(true));
             if (process.exitValue() != 0 && isDependencyResolutionUnavailable(output)) {
                 throw new TestAbortedException("Skipping Maven build check: dependency resolution unavailable "
                                                        + "in this environment.\n" + output);
             }
-            assertThat(process.exitValue())
-                    .as("Generated project Maven build failed.%nOutput:%n%s", output)
-                    .isZero();
+            assertThat(
+                    String.format("Generated project Maven build failed.%nOutput:%n%s", output),
+                    process.exitValue(),
+                    is(0));
         } finally {
             Files.deleteIfExists(settingsFile);
         }

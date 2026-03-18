@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.File;
@@ -13,7 +29,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration test — validates that OpenAPI schema constraints are mapped to
@@ -49,14 +66,14 @@ class ValidationGenerationIT {
 
     @Test
     void itemModelHasValidatedAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.Validated");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.Validated"));
     }
 
     @Test
     void itemModelImportsValidation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("import io.helidon.validation.Validation;");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("import io.helidon.validation.Validation;"));
     }
 
     // -------------------------------------------------------------------------
@@ -65,14 +82,14 @@ class ValidationGenerationIT {
 
     @Test
     void itemModelNameHasLengthAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.String.Length(min = 1, value = 100)");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.String.Length(min = 1, value = 100)"));
     }
 
     @Test
     void itemModelNameHasPatternAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.String.Pattern(");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.String.Pattern("));
     }
 
     // -------------------------------------------------------------------------
@@ -81,14 +98,14 @@ class ValidationGenerationIT {
 
     @Test
     void itemModelQuantityHasMinAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.Integer.Min(0)");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.Integer.Min(0)"));
     }
 
     @Test
     void itemModelQuantityHasMaxAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.Integer.Max(1000)");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.Integer.Max(1000)"));
     }
 
     // -------------------------------------------------------------------------
@@ -97,8 +114,8 @@ class ValidationGenerationIT {
 
     @Test
     void itemModelPriceHasNumberMinAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.Number.Min(\"0.01\")");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.Number.Min(\"0.01\")"));
     }
 
     // -------------------------------------------------------------------------
@@ -107,8 +124,8 @@ class ValidationGenerationIT {
 
     @Test
     void itemModelTagsHasSizeAnnotation() throws IOException {
-        assertThat(read(modelFile("Item.java")))
-                .contains("@Validation.Collection.Size(min = 1, value = 20)");
+        assertThat(read(modelFile("Item.java")),
+                   containsString("@Validation.Collection.Size(min = 1, value = 20)"));
     }
 
     // -------------------------------------------------------------------------
@@ -117,8 +134,8 @@ class ValidationGenerationIT {
 
     @Test
     void pomHasValidationDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-validation");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("helidon-validation"));
     }
 
     @Test

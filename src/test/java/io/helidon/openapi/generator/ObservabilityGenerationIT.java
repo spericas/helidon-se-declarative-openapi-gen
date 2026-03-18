@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.File;
@@ -13,7 +29,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration test — verifies that {@code tracingEnabled=true} and {@code metricsEnabled=true}
@@ -51,20 +68,20 @@ class ObservabilityGenerationIT {
 
     @Test
     void endpointHasTracingTracedAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@Tracing.Traced");
+        assertThat(read(apiFile("PetsEndpoint.java")),
+                   containsString("@Tracing.Traced"));
     }
 
     @Test
     void endpointImportsTracing() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("import io.helidon.tracing.Tracing;");
+        assertThat(read(apiFile("PetsEndpoint.java")),
+                   containsString("import io.helidon.tracing.Tracing;"));
     }
 
     @Test
     void pomHasTracingDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-tracing");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("helidon-tracing"));
     }
 
     // -------------------------------------------------------------------------
@@ -73,20 +90,20 @@ class ObservabilityGenerationIT {
 
     @Test
     void endpointHasMetricsTimedAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@Metrics.Timed");
+        assertThat(read(apiFile("PetsEndpoint.java")),
+                   containsString("@Metrics.Timed"));
     }
 
     @Test
     void endpointImportsMetrics() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("import io.helidon.metrics.api.Metrics;");
+        assertThat(read(apiFile("PetsEndpoint.java")),
+                   containsString("import io.helidon.metrics.api.Metrics;"));
     }
 
     @Test
     void pomHasMetricsDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-metrics-api");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("helidon-metrics-api"));
     }
 
     @Test

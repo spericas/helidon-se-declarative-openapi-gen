@@ -1,10 +1,27 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.codegen.CodegenType;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Unit tests for {@link HelidonSeDeclarativeCodegen} — verifies naming conventions,
@@ -25,17 +42,17 @@ class HelidonSeDeclarativeCodegenTest {
 
     @Test
     void getNameReturnsCorrectId() {
-        assertThat(codegen.getName()).isEqualTo("helidon-se-declarative");
+        assertThat(codegen.getName(), is("helidon-se-declarative"));
     }
 
     @Test
     void getTagIsServer() {
-        assertThat(codegen.getTag()).isEqualTo(CodegenType.SERVER);
+        assertThat(codegen.getTag(), is(CodegenType.SERVER));
     }
 
     @Test
     void getHelpIsNotBlank() {
-        assertThat(codegen.getHelp()).isNotBlank();
+        assertThat(codegen.getHelp() != null && !codegen.getHelp().isBlank(), is(true));
     }
 
     // -------------------------------------------------------------------------
@@ -44,27 +61,27 @@ class HelidonSeDeclarativeCodegenTest {
 
     @Test
     void toApiNameSimpleTagReturnsCamelCase() {
-        assertThat(codegen.toApiName("pets")).isEqualTo("Pets");
+        assertThat(codegen.toApiName("pets"), is("Pets"));
     }
 
     @Test
     void toApiNameEmptyTagReturnsDefault() {
-        assertThat(codegen.toApiName("")).isEqualTo("Default");
+        assertThat(codegen.toApiName(""), is("Default"));
     }
 
     @Test
     void toApiNameNullTagReturnsDefault() {
-        assertThat(codegen.toApiName(null)).isEqualTo("Default");
+        assertThat(codegen.toApiName(null), is("Default"));
     }
 
     @Test
     void toApiNameHyphenatedTagReturnsCamelCase() {
-        assertThat(codegen.toApiName("pet-store")).isEqualTo("PetStore");
+        assertThat(codegen.toApiName("pet-store"), is("PetStore"));
     }
 
     @Test
     void toApiNameMultiWordTagReturnsCamelCase() {
-        assertThat(codegen.toApiName("store orders")).isEqualTo("StoreOrders");
+        assertThat(codegen.toApiName("store orders"), is("StoreOrders"));
     }
 
     // -------------------------------------------------------------------------
@@ -74,12 +91,12 @@ class HelidonSeDeclarativeCodegenTest {
     @Test
     void toModelNameErrorMappedToApiError() {
         // "Error" clashes with java.lang.Error — must be remapped
-        assertThat(codegen.toModelName("Error")).isEqualTo("ApiError");
+        assertThat(codegen.toModelName("Error"), is("ApiError"));
     }
 
     @Test
     void toModelNamePetUnchanged() {
-        assertThat(codegen.toModelName("Pet")).isEqualTo("Pet");
+        assertThat(codegen.toModelName("Pet"), is("Pet"));
     }
 
     // -------------------------------------------------------------------------
@@ -89,31 +106,31 @@ class HelidonSeDeclarativeCodegenTest {
     @Test
     void apiFilenameApiMustacheProducesEndpointJava() {
         String filename = codegen.apiFilename("api.mustache", "pets");
-        assertThat(filename).endsWith("PetsEndpoint.java");
+        assertThat(filename.endsWith("PetsEndpoint.java"), is(true));
     }
 
     @Test
     void apiFilenameApiInterfaceMustacheProducesApiJava() {
         String filename = codegen.apiFilename("api-interface.mustache", "pets");
-        assertThat(filename).endsWith("PetsApi.java");
+        assertThat(filename.endsWith("PetsApi.java"), is(true));
     }
 
     @Test
     void apiFilenameRestClientMustacheProducesClientJava() {
         String filename = codegen.apiFilename("restClient.mustache", "pets");
-        assertThat(filename).endsWith("PetsClient.java");
+        assertThat(filename.endsWith("PetsClient.java"), is(true));
     }
 
     @Test
     void apiFilenameApiExceptionMustacheProducesExceptionJava() {
         String filename = codegen.apiFilename("apiException.mustache", "pets");
-        assertThat(filename).endsWith("PetsException.java");
+        assertThat(filename.endsWith("PetsException.java"), is(true));
     }
 
     @Test
     void apiFilenameErrorHandlerMustacheProducesErrorHandlerJava() {
         String filename = codegen.apiFilename("errorHandler.mustache", "pets");
-        assertThat(filename).endsWith("PetsErrorHandler.java");
+        assertThat(filename.endsWith("PetsErrorHandler.java"), is(true));
     }
 
     // -------------------------------------------------------------------------
@@ -122,22 +139,21 @@ class HelidonSeDeclarativeCodegenTest {
 
     @Test
     void constructorRegistersApiAndApiInterfaceTemplates() {
-        assertThat(codegen.apiTemplateFiles())
-                .containsKey("api.mustache")
-                .containsKey("api-interface.mustache");
+        assertThat(codegen.apiTemplateFiles().containsKey("api.mustache"), is(true));
+        assertThat(codegen.apiTemplateFiles().containsKey("api-interface.mustache"), is(true));
     }
 
     @Test
     void constructorRegistersModelTemplate() {
-        assertThat(codegen.modelTemplateFiles()).containsKey("model.mustache");
+        assertThat(codegen.modelTemplateFiles().containsKey("model.mustache"), is(true));
     }
 
     @Test
     void constructorClearsDocTemplatesAndRegistersUnitTestTemplates() {
-        assertThat(codegen.modelDocTemplateFiles()).isEmpty();
-        assertThat(codegen.apiDocTemplateFiles()).isEmpty();
-        assertThat(codegen.apiTestTemplateFiles()).containsEntry("api-test.mustache", ".java");
-        assertThat(codegen.modelTestTemplateFiles()).isEmpty();
+        assertThat(codegen.modelDocTemplateFiles().isEmpty(), is(true));
+        assertThat(codegen.apiDocTemplateFiles().isEmpty(), is(true));
+        assertThat(".java".equals(codegen.apiTestTemplateFiles().get("api-test.mustache")), is(true));
+        assertThat(codegen.modelTestTemplateFiles().isEmpty(), is(true));
     }
 
     // -------------------------------------------------------------------------
@@ -153,8 +169,7 @@ class HelidonSeDeclarativeCodegenTest {
                 .addList("basicAuth", java.util.List.of("admin")));
         org.openapitools.codegen.CodegenOperation cop =
                 codegen.fromOperation("/items", "get", op, java.util.List.of());
-        assertThat(cop.vendorExtensions)
-                .containsEntry("x-roles-annotation-value", "\"admin\"");
+        assertThat("\"admin\"".equals(cop.vendorExtensions.get("x-roles-annotation-value")), is(true));
     }
 
     @Test
@@ -164,8 +179,8 @@ class HelidonSeDeclarativeCodegenTest {
                 .addList("basicAuth", java.util.List.of("admin", "moderator")));
         org.openapitools.codegen.CodegenOperation cop =
                 codegen.fromOperation("/items", "delete", op, java.util.List.of());
-        assertThat(cop.vendorExtensions)
-                .containsEntry("x-roles-annotation-value", "{\"admin\", \"moderator\"}");
+        assertThat("{\"admin\", \"moderator\"}".equals(cop.vendorExtensions.get("x-roles-annotation-value")),
+                   is(true));
     }
 
     @Test
@@ -173,9 +188,8 @@ class HelidonSeDeclarativeCodegenTest {
         io.swagger.v3.oas.models.Operation op = new io.swagger.v3.oas.models.Operation();
         org.openapitools.codegen.CodegenOperation cop =
                 codegen.fromOperation("/items", "get", op, java.util.List.of());
-        assertThat(cop.vendorExtensions)
-                .doesNotContainKey("x-has-security-roles")
-                .doesNotContainKey("x-roles-annotation-value");
+        assertThat(cop.vendorExtensions.containsKey("x-has-security-roles"), is(false));
+        assertThat(cop.vendorExtensions.containsKey("x-roles-annotation-value"), is(false));
     }
 
     // -------------------------------------------------------------------------
@@ -184,8 +198,8 @@ class HelidonSeDeclarativeCodegenTest {
 
     @Test
     void defaultPackagesMatchExpectedValues() {
-        assertThat(codegen.apiPackage()).isEqualTo("io.helidon.example.api");
-        assertThat(codegen.modelPackage()).isEqualTo("io.helidon.example.model");
-        assertThat(codegen.getInvokerPackage()).isEqualTo("io.helidon.example");
+        assertThat(codegen.apiPackage(), is("io.helidon.example.api"));
+        assertThat(codegen.modelPackage(), is("io.helidon.example.model"));
+        assertThat(codegen.getInvokerPackage(), is("io.helidon.example"));
     }
 }

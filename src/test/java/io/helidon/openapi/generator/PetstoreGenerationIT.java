@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.helidon.openapi.generator;
 
 import java.io.File;
@@ -13,7 +29,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration test — runs the full openapi-generator pipeline against
@@ -53,63 +73,63 @@ class PetstoreGenerationIT {
 
     @Test
     void pomXmlIsGenerated() {
-        assertThat(outputDir.resolve("pom.xml")).exists();
+        assertThat(Files.exists(outputDir.resolve("pom.xml")), is(true));
     }
 
     @Test
     void mainJavaIsGenerated() {
-        assertThat(javaFile("io/helidon/example/Main.java")).exists();
+        assertThat(javaFile("io/helidon/example/Main.java").exists(), is(true));
     }
 
     @Test
     void applicationYamlIsGenerated() {
-        assertThat(resourceFile("application.yaml")).exists();
+        assertThat(resourceFile("application.yaml").exists(), is(true));
     }
 
     @Test
     void loggingPropertiesIsGenerated() {
-        assertThat(resourceFile("logging.properties")).exists();
+        assertThat(resourceFile("logging.properties").exists(), is(true));
     }
 
     @Test
     void petsEndpointIsGenerated() {
-        assertThat(apiFile("PetsEndpoint.java")).exists();
+        assertThat(apiFile("PetsEndpoint.java").exists(), is(true));
     }
 
     @Test
     void petsApiIsGenerated() {
-        assertThat(apiFile("PetsApi.java")).exists();
+        assertThat(apiFile("PetsApi.java").exists(), is(true));
     }
 
     @Test
     void petsClientIsGenerated() {
-        assertThat(apiFile("PetsClient.java")).exists();
+        assertThat(apiFile("PetsClient.java").exists(), is(true));
     }
 
     @Test
     void petsExceptionIsGenerated() {
-        assertThat(apiFile("PetsException.java")).exists();
+        assertThat(apiFile("PetsException.java").exists(), is(true));
     }
 
     @Test
     void petsErrorHandlerIsGenerated() {
-        assertThat(apiFile("PetsErrorHandler.java")).exists();
+        assertThat(apiFile("PetsErrorHandler.java").exists(), is(true));
     }
 
     @Test
     void petModelIsGenerated() {
-        assertThat(modelFile("Pet.java")).exists();
+        assertThat(modelFile("Pet.java").exists(), is(true));
     }
 
     @Test
     void apiErrorModelIsGenerated() {
         // "Error" schema → renamed to "ApiError"
-        assertThat(modelFile("ApiError.java")).exists();
+        assertThat(modelFile("ApiError.java").exists(), is(true));
     }
 
     @Test
     void petsEndpointUnitTestIsGenerated() {
-        assertThat(apiTestFile("PetsEndpointTest.java")).exists();
+        assertThat(apiTestFile("PetsEndpointTest.java").exists(), is(true));
     }
 
     // -------------------------------------------------------------------------
@@ -118,82 +138,74 @@ class PetstoreGenerationIT {
 
     @Test
     void endpointHasRestServerEndpointAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@RestServer.Endpoint");
+        assertThat(read(apiFile("PetsEndpoint.java")), containsString("@RestServer.Endpoint"));
     }
 
     @Test
     void endpointHasServiceSingletonAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@Service.Singleton");
+        assertThat(read(apiFile("PetsEndpoint.java")), containsString("@Service.Singleton"));
     }
 
     @Test
     void endpointDoesNotDuplicateHttpPathAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .doesNotContain("@Http.Path(\"/pets\")");
+        assertThat(read(apiFile("PetsEndpoint.java")), not(containsString("@Http.Path(\"/pets\")")));
     }
 
     @Test
     void endpointImplementsSharedApi() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("implements PetsApi");
+        assertThat(read(apiFile("PetsEndpoint.java")), containsString("implements PetsApi"));
     }
 
     @Test
     void apiInterfaceListPetsHasGetAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsApi.java")))
-                .contains("@Http.GET");
+        assertThat(read(apiFile("PetsApi.java")), containsString("@Http.GET"));
     }
 
     @Test
     void apiInterfaceCreatePetsHasPostAndStatus201() throws IOException {
         String content = read(apiFile("PetsApi.java"));
-        assertThat(content)
-                .contains("@Http.POST")
-                .contains("@RestServer.Status(201)");
+        assertThat(content, containsString("@Http.POST"));
+        assertThat(content, containsString("@RestServer.Status(201)"));
     }
 
     @Test
     void endpointListPetsHasOptionalLimitParam() throws IOException {
         String content = read(apiFile("PetsEndpoint.java"));
-        assertThat(content).contains("Optional<Integer>");
-        assertThat(content).contains("@Http.QueryParam(\"limit\")");
+        assertThat(content, containsString("Optional<Integer>"));
+        assertThat(content, containsString("@Http.QueryParam(\"limit\")"));
     }
 
     @Test
     void endpointListPetsHasComputedHeaderAnnotation() throws IOException {
         // listPets has x-next response header → @RestServer.ComputedHeader annotation
         String content = read(apiFile("PetsEndpoint.java"));
-        assertThat(content).contains("@RestServer.ComputedHeader(name = \"x-next\"");
-        assertThat(content).doesNotContain("ServerResponse");
+        assertThat(content, containsString("@RestServer.ComputedHeader(name = \"x-next\""));
+        assertThat(content, not(containsString("ServerResponse")));
     }
 
     @Test
     void computedHeaderFunctionIsGeneratedAsOwnFile() throws IOException {
         String content = read(apiFile("PetsXNextHeaderFn.java"));
-        assertThat(content).contains("@Service.Named(\"xNextHeaderFn\")");
-        assertThat(content).contains("class PetsXNextHeaderFn implements Http.HeaderFunction");
-        assertThat(content).contains("Optional<Header> apply(HeaderName headerName)");
+        assertThat(content, containsString("@Service.Named(\"xNextHeaderFn\")"));
+        assertThat(content, containsString("class PetsXNextHeaderFn implements Http.HeaderFunction"));
+        assertThat(content, containsString("Optional<Header> apply(HeaderName headerName)"));
     }
 
     @Test
     void computedHeaderFunctionImportsHeaderTypes() throws IOException {
         String content = read(apiFile("PetsXNextHeaderFn.java"));
-        assertThat(content).contains("import io.helidon.http.Header;");
-        assertThat(content).contains("import io.helidon.http.HeaderName;");
+        assertThat(content, containsString("import io.helidon.http.Header;"));
+        assertThat(content, containsString("import io.helidon.http.HeaderName;"));
     }
 
     @Test
     void endpointShowPetByIdHasPathParam() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("@Http.PathParam(\"petId\")");
+        assertThat(read(apiFile("PetsEndpoint.java")), containsString("@Http.PathParam(\"petId\")"));
     }
 
     @Test
     void endpointListPetsReturnsListOfPet() throws IOException {
-        assertThat(read(apiFile("PetsEndpoint.java")))
-                .contains("List<Pet>");
+        assertThat(read(apiFile("PetsEndpoint.java")), containsString("List<Pet>"));
     }
 
     // -------------------------------------------------------------------------
@@ -202,14 +214,12 @@ class PetstoreGenerationIT {
 
     @Test
     void apiInterfaceIsAnInterface() throws IOException {
-        assertThat(read(apiFile("PetsApi.java")))
-                .contains("public interface PetsApi");
+        assertThat(read(apiFile("PetsApi.java")), containsString("public interface PetsApi"));
     }
 
     @Test
     void apiInterfaceHasHttpPathAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsApi.java")))
-                .contains("@Http.Path(\"/pets\")");
+        assertThat(read(apiFile("PetsApi.java")), containsString("@Http.Path(\"/pets\")"));
     }
 
     // -------------------------------------------------------------------------
@@ -219,14 +229,13 @@ class PetstoreGenerationIT {
     @Test
     void endpointUnitTestInstantiatesEndpoint() throws IOException {
         String content = read(apiTestFile("PetsEndpointTest.java"));
-        assertThat(content).contains("class PetsEndpointTest");
-        assertThat(content).contains("void testListPets()");
-        assertThat(content).contains("void testCreatePets()");
-        assertThat(content).contains("void testShowPetById()");
-        assertThat(content)
-                .satisfiesAnyOf(
-                        c -> assertThat(c).contains("@ServerTest"),
-                        c -> assertThat(c).contains("assertThat(new PetsEndpoint(), notNullValue())"));
+        assertThat(content, containsString("class PetsEndpointTest"));
+        assertThat(content, containsString("void testListPets()"));
+        assertThat(content, containsString("void testCreatePets()"));
+        assertThat(content, containsString("void testShowPetById()"));
+        assertThat(content, anyOf(
+                containsString("@ServerTest"),
+                containsString("assertThat(new PetsEndpoint(), notNullValue())")));
     }
 
     // -------------------------------------------------------------------------
@@ -235,49 +244,44 @@ class PetstoreGenerationIT {
 
     @Test
     void petModelHasCorrectPackage() throws IOException {
-        assertThat(read(modelFile("Pet.java")))
-                .contains("package io.helidon.example.model;");
+        assertThat(read(modelFile("Pet.java")), containsString("package io.helidon.example.model;"));
     }
 
     @Test
     void petModelHasJsonEntityAnnotation() throws IOException {
-        assertThat(read(modelFile("Pet.java")))
-                .contains("@Json.Entity");
+        assertThat(read(modelFile("Pet.java")), containsString("@Json.Entity"));
     }
 
     @Test
     void petModelRequiredFieldsHaveJsonRequired() throws IOException {
         String content = read(modelFile("Pet.java"));
         // id and name are required in petstore.yaml
-        assertThat(content).contains("@Json.Required");
+        assertThat(content, containsString("@Json.Required"));
     }
 
     @Test
     void petModelHasIdNameTagFields() throws IOException {
         String content = read(modelFile("Pet.java"));
-        assertThat(content)
-                .contains("Long id")
-                .contains("String name")
-                .contains("String tag");
+        assertThat(content, containsString("Long id"));
+        assertThat(content, containsString("String name"));
+        assertThat(content, containsString("String tag"));
     }
 
     @Test
     void petModelHasGettersAndSetters() throws IOException {
         String content = read(modelFile("Pet.java"));
-        assertThat(content)
-                .contains("getId()")
-                .contains("setId(")
-                .contains("getName()")
-                .contains("setName(");
+        assertThat(content, containsString("getId()"));
+        assertThat(content, containsString("setId("));
+        assertThat(content, containsString("getName()"));
+        assertThat(content, containsString("setName("));
     }
 
     @Test
     void petModelNoSwaggerImports() throws IOException {
         String content = read(modelFile("Pet.java"));
-        assertThat(content)
-                .doesNotContain("io.swagger.annotations")
-                .doesNotContain("ApiModel")
-                .doesNotContain("ApiModelProperty");
+        assertThat(content, not(containsString("io.swagger.annotations")));
+        assertThat(content, not(containsString("ApiModel")));
+        assertThat(content, not(containsString("ApiModelProperty")));
     }
 
     // -------------------------------------------------------------------------
@@ -286,16 +290,14 @@ class PetstoreGenerationIT {
 
     @Test
     void apiErrorModelIsNamedApiError() throws IOException {
-        assertThat(read(modelFile("ApiError.java")))
-                .contains("public class ApiError");
+        assertThat(read(modelFile("ApiError.java")), containsString("public class ApiError"));
     }
 
     @Test
     void apiErrorModelHasCodeAndMessageFields() throws IOException {
         String content = read(modelFile("ApiError.java"));
-        assertThat(content)
-                .contains("Integer code")
-                .contains("String message");
+        assertThat(content, containsString("Integer code"));
+        assertThat(content, containsString("String message"));
     }
 
     // -------------------------------------------------------------------------
@@ -304,52 +306,48 @@ class PetstoreGenerationIT {
 
     @Test
     void pomXmlContainsHelidonVersion() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("4.4.0");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()), containsString("4.4.0"));
     }
 
     @Test
     void pomXmlContainsHelidonWebserver() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-webserver");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()), containsString("helidon-webserver"));
     }
 
     @Test
     void pomXmlContainsJsonBindingDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("helidon-http-media-json-binding");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()), containsString("helidon-http-media-json-binding"));
     }
 
     @Test
     void pomXmlContainsJUnitDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("<artifactId>junit-jupiter</artifactId>");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("<artifactId>junit-jupiter</artifactId>"));
     }
 
     @Test
     void pomXmlContainsServerTestDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("<artifactId>helidon-webserver-testing-junit5</artifactId>");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("<artifactId>helidon-webserver-testing-junit5</artifactId>"));
     }
 
     @Test
     void pomXmlContainsWebclientApiDependency() throws IOException {
-        assertThat(read(outputDir.resolve("pom.xml").toFile()))
-                .contains("<artifactId>helidon-webclient-api</artifactId>");
+        assertThat(read(outputDir.resolve("pom.xml").toFile()),
+                   containsString("<artifactId>helidon-webclient-api</artifactId>"));
     }
 
     @Test
     void pomXmlDisablesShadePlugin() throws IOException {
         String pom = read(outputDir.resolve("pom.xml").toFile());
-        assertThat(pom)
-                .contains("<artifactId>maven-shade-plugin</artifactId>")
-                .contains("<skip>true</skip>");
+        assertThat(pom, containsString("<artifactId>maven-shade-plugin</artifactId>"));
+        assertThat(pom, containsString("<skip>true</skip>"));
     }
 
     @Test
     void clientHasDeclarativeEndpointAnnotation() throws IOException {
-        assertThat(read(apiFile("PetsClient.java")))
-                .contains("@RestClient.Endpoint(\"${app.client.endpoint:http://localhost:8080}\")");
+        assertThat(read(apiFile("PetsClient.java")),
+                   containsString("@RestClient.Endpoint(\"${app.client.endpoint:http://localhost:8080}\")"));
     }
 
     // -------------------------------------------------------------------------
@@ -358,8 +356,7 @@ class PetstoreGenerationIT {
 
     @Test
     void mainJavaHasGenerateBindingAnnotation() throws IOException {
-        assertThat(read(javaFile("io/helidon/example/Main.java")))
-                .contains("@Service.GenerateBinding");
+        assertThat(read(javaFile("io/helidon/example/Main.java")), containsString("@Service.GenerateBinding"));
     }
 
     @Test
@@ -385,27 +382,25 @@ class PetstoreGenerationIT {
 
     @Test
     void openapiYamlIsGenerated() {
-        assertThat(outputDir.resolve("src/main/resources/META-INF/openapi.yaml")).exists();
+        assertThat(Files.exists(outputDir.resolve("src/main/resources/META-INF/openapi.yaml")), is(true));
     }
 
     @Test
     void openapiYamlContainsSpecContent() throws IOException {
         String content = Files.readString(
                 outputDir.resolve("src/main/resources/META-INF/openapi.yaml"));
-        assertThat(content)
-                .contains("openapi:")
-                .contains("paths:")
-                .contains("/pets")
-                .doesNotContain("null");
+        assertThat(content, containsString("openapi:"));
+        assertThat(content, containsString("paths:"));
+        assertThat(content, containsString("/pets"));
+        assertThat(content, not(containsString("null")));
     }
 
     @Test
     void applicationTestYamlIsGeneratedWithServerTestEndpoint() throws IOException {
         String content = Files.readString(
                 outputDir.resolve("src/test/resources/application-test.yaml"));
-        assertThat(content)
-                .contains("app:")
-                .contains("endpoint: \"http://localhost:${test.server.port}\"");
+        assertThat(content, containsString("app:"));
+        assertThat(content, containsString("endpoint: \"http://localhost:${test.server.port}\""));
     }
 
     private File javaFile(String relativePath) {
